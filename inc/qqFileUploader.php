@@ -16,7 +16,9 @@ class qqFileUploader {
     protected $uploadName;
 
     function __construct(){
+    
         $this->sizeLimit = $this->toBytes(ini_get('upload_max_filesize'));
+        
     }
 
     /**
@@ -70,7 +72,7 @@ class qqFileUploader {
 	            	'file_uid'	=> $uuid,
 	            	'error' 	=> array( 
 	            		'code' => 100,
-	            		'message' => __( "Server Error. Max file size to high, try activate chunking.", "prso-gforms-plupload") 
+	            		'message' => __( "Server Error. Max file size too high, try activate chunking.", "prso-gforms-plupload") 
 	            	)
 	            );
 	        }

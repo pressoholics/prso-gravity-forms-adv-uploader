@@ -13,6 +13,9 @@ class PrsoGformsAdvUploaderInit {
 	private static $encrypt_key						= '4ddRp]4X5}R-WU';
 	private $move_div 								= array();
 	
+	protected $plugin_options						= array();
+	protected $user_interface						= NULL;
+	
 	//Gforms meta keys
 	private static $delete_files_meta_key		= 'prso-pluploader-delete-files';
 	
@@ -22,6 +25,12 @@ class PrsoGformsAdvUploaderInit {
  		
  		//Set include path
  		$this->plugin_inc_path = PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc';
+ 		
+ 		//Cache plugin options
+ 		$this->plugin_options = get_option('prso_gforms_adv_uploader_options');
+ 		
+ 		//Cache UI
+ 		$this->user_interface = $this->plugin_options['ui_select'];
  		
  		//Init plugin
  		$this->plugin_init();
@@ -39,11 +48,9 @@ class PrsoGformsAdvUploaderInit {
 		
 		//*** PRSO PLUGIN CORE ACTIONS ***//
 		
-		//Register scripts
-		add_action( 'init', array($this, 'register_scripts') );
-		
 		//Enqueue any custom scripts or styles
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		
 		//Add any custom actions
 		add_action( 'init', array( $this, 'add_actions' ) );
@@ -64,52 +71,6 @@ class PrsoGformsAdvUploaderInit {
 	}
 	
 	/**
-	* register_scripts
-	* 
-	* Called by $this->admin_init() to queue any custom scripts or stylesheets
-	* 
-	* @access 	public
-	* @author	Ben Moody
-	*/
-	public function register_scripts() {
-		
-		//Init vars
-		$plupload_i18n_script		= NULL;
-		$plupload_i18n_script_path	= NULL;
-		
-		//Register Plupload scripts
-		wp_register_script( 'plupload-jquery-ui-core', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js', array('jquery'), '1.8.9' );
-		
-		wp_register_script( 'plupload-jquery-ui', plugins_url( '/inc/js/jquery.ui.plupload/jquery.ui.plupload.js', __FILE__), array('plupload-all'), '1.0', TRUE );
-		
-		//i18n Scripts
-		$plupload_i18n_script = apply_filters( 'prso_gform_pluploader_i18n_script', $plupload_i18n_script );
-		
-		//Register request plupload i18n script if found
-		if( isset($this->plugin_path, $plupload_i18n_script) ) {
-			
-			$plupload_i18n_script_path = $this->plugin_path . 'js/i18n/' . $plupload_i18n_script . '.js';
-			
-			if( file_exists($plupload_i18n_script_path)) {
-				wp_register_script( "plupload-i18n", plugins_url("/inc/js/i18n/{$plupload_i18n_script}.js", __FILE__), array('plupload-jquery-ui-core'), NULL, TRUE );
-			}
-			
-		}
-		
-		//Register custom scripts for use with gforms
-		wp_register_script( 'prso-pluploader-entries', plugins_url(  '/inc/js/gforms-entries.js', __FILE__), array('jquery'), '1.0', TRUE );
-		
-		//Register plupload init script
-		wp_register_script( 'prso-pluploader-init', plugins_url(  '/inc/js/init_plupload.js', __FILE__), array('plupload-jquery-ui'), '1.0', TRUE );
-		
-		//Register plupload Styles
-		wp_register_style( 'plupload-jquery-ui-core', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css', NULL, '1.8.9', 'screen' );
-		wp_register_style( 'plupload-jquery-ui', plugins_url(  '/inc/js/jquery.ui.plupload/css/jquery.ui.plupload.css', __FILE__), array('plupload-jquery-ui-core'), '1.0', 'screen' );
-		wp_register_style( 'plupload-gform-form-display', plugins_url('/inc/css/form-display.css', __FILE__), array(), '1.0', 'screen' );
-		
-	}
-	
-	/**
 	* enqueue_scripts
 	* 
 	* Called by $this->admin_init() to queue any custom scripts or stylesheets
@@ -120,29 +81,190 @@ class PrsoGformsAdvUploaderInit {
 	public function enqueue_scripts( $activate_fine_uploader = FALSE ) {
 		
 		//Init vars
-		$google_jquery_url = FALSE;
+		$debug_mode					= FALSE;
+		$in_footer					= TRUE;
+		$plupload_i18n_script		= NULL;
+		$plupload_i18n_script_path	= NULL;
 		
-		if( !is_admin() ) {
+		//Register Plupload scripts
 		
-			//Try to enqueue google api jquery ui
-			$google_jquery_url = @fopen( 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js', 'r' ); //Test google jquery file
+		
+		//Plupload Full Min
+		if( !$debug_mode ) {
+		
+			wp_register_script( 'plupload-full-min', 
+				plugins_url( '/inc/js/plupload/plupload.full.min.js', __FILE__), 
+				array('jquery'), 
+				'2.1.1', 
+				$in_footer 
+			);
 			
-	 		if( $google_jquery_url !== FALSE ) {
-	 			wp_enqueue_script('plupload-jquery-ui-core');
-	 		} else {
-	 			//Switch to wordpress core versions as backup
-	 			wp_enqueue_script('jquery-ui-core');
-	 			wp_enqueue_script('jquery-ui-widget');
-	 		}
-	 		
-			//Enqueue scripts for Plupload
-			wp_enqueue_script('plupload-all');
-			wp_enqueue_script('plupload-jquery-ui');
+		} else {
 			
-			//i18n if requested
-			wp_enqueue_script('plupload-i18n');
+			wp_register_script( 'plupload-moxie', 
+				plugins_url( '/inc/js/plupload/moxie.js', __FILE__), 
+				array('jquery'), 
+				'2.1.1', 
+				$in_footer 
+			);
+		
+			wp_register_script( 'plupload-full-min', 
+				plugins_url( '/inc/js/plupload/plupload.dev.js', __FILE__), 
+				array('plupload-moxie'), 
+				'2.1.1', 
+				$in_footer 
+			);
 			
 		}
+		//Enqueue scripts for Plupload
+		wp_enqueue_script('plupload-full-min');
+		
+		//Detect User Interface
+		switch( $this->user_interface ) {
+			case 'jquery-ui':
+			
+				//JQuery UI Min
+				wp_register_script( 'plupload-jquery-ui-core', 
+					'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js', 
+					array('jquery'), 
+					'1.10.2', 
+					$in_footer 
+				);
+		
+				//Plupload JQuery UI
+				wp_register_script( 'plupload-jquery-ui', 
+					plugins_url( '/inc/js/plupload/jquery.ui.plupload/jquery.ui.plupload.js', __FILE__), 
+					array('plupload-full-min'), 
+					'2.1.1', 
+					$in_footer 
+				);
+				
+				//Register plupload init script
+				wp_register_script( 'prso-pluploader-init', 
+					plugins_url(  '/inc/js/init_plupload_jquery_ui.js', __FILE__), 
+					array('plupload-full-min'), 
+					'1.0', 
+					$in_footer 
+				);
+				
+				//Register plupload Styles
+				wp_register_style( 'plupload-jquery-ui-core', 
+					'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/themes/smoothness/jquery-ui.min.css', 
+					NULL, 
+					'1.10.2', 
+					'screen' 
+				);
+				
+				//Plupload JQuery UI Style
+				wp_register_style( 'plupload-jquery-ui', 
+					plugins_url(  '/inc/js/plupload/jquery.ui.plupload/css/jquery.ui.plupload.css', __FILE__), 
+					array('plupload-jquery-ui-core'), 
+					'2.1.1', 
+					'screen' 
+				);
+				
+				//Enqueue
+				if( !is_admin() ) {
+				
+					//Scripts
+			 		wp_enqueue_script('plupload-jquery-ui-core');
+					wp_enqueue_script('plupload-jquery-ui');
+					
+					//Styles
+					wp_enqueue_style('plupload-jquery-ui-core');
+					wp_enqueue_style('plupload-jquery-ui');
+					
+				}			
+				
+				
+				break;
+			case 'queue':	
+				
+				//Plupload Queue Script
+				wp_register_script( 'plupload-jquery-queue', 
+					plugins_url(  '/inc/js/plupload/jquery.plupload.queue/jquery.plupload.queue.min.js', __FILE__), 
+					array('plupload-full-min'), 
+					'2.1.1', 
+					$in_footer 
+				);
+				
+				//Register plupload init script
+				wp_register_script( 'prso-pluploader-init', 
+					plugins_url(  '/inc/js/init_plupload_queue.js', __FILE__), 
+					array('plupload-full-min'), 
+					'1.0', 
+					$in_footer 
+				);
+				
+				//Plupload Queue Style
+				wp_register_style( 'plupload-queue', 
+					plugins_url(  '/inc/js/plupload/jquery.plupload.queue/css/jquery.plupload.queue.css', __FILE__), 
+					array(), 
+					'2.1.1', 
+					'screen' 
+				);
+				
+				//Enqueue
+				if( !is_admin() ) {
+				
+					//Scripts
+			 		wp_enqueue_script('plupload-jquery-queue');
+					
+					//Styles
+					wp_enqueue_style('plupload-queue');
+					
+				}
+				
+				break;
+			default:
+				
+				//Register plupload init script
+				wp_register_script( 'prso-pluploader-init', 
+					plugins_url(  '/inc/js/init_plupload_custom.js', __FILE__), 
+					array('plupload-full-min'), 
+					'1.0', 
+					$in_footer 
+				);
+				
+				break;
+		}
+		
+		
+		
+		//i18n Scripts
+		$plupload_i18n_script = apply_filters( 'prso_gform_pluploader_i18n_script', $plupload_i18n_script );
+		
+		//Register request plupload i18n script if found
+		if( isset($this->plugin_path, $plupload_i18n_script) ) {
+			
+			$plupload_i18n_script_path = $this->plugin_path . 'js/i18n/' . $plupload_i18n_script . '.js';
+			
+			if( file_exists($plupload_i18n_script_path)) {
+			
+				wp_register_script( "plupload-i18n", 
+					plugins_url("/inc/js/plupload/i18n/{$plupload_i18n_script}.js", __FILE__), 
+					array('plupload-full-min'), 
+					NULL, 
+					$in_footer 
+				);
+				
+				//i18n if requested
+				wp_enqueue_script('plupload-i18n');
+				
+			}
+			
+		}
+		
+		//Register custom scripts for use with gforms
+		wp_register_script( 'prso-pluploader-entries', 
+			plugins_url(  '/inc/js/gforms-entries.js', __FILE__), 
+			array('jquery'), 
+			'1.0', 
+			$in_footer 
+		);	
+		
+		//Plugin Gforms admin area style
+		wp_register_style( 'plupload-gform-form-display', plugins_url('/inc/css/form-display.css', __FILE__), array(), '1.0', 'screen' );
 		
 		//Enqueue script for gforms entry customization
 		if( is_admin() && isset($_GET['page']) && $_GET['page'] === 'gf_entries' ) {
@@ -164,10 +286,6 @@ class PrsoGformsAdvUploaderInit {
 			//Call helper to cache and localize vars requied for init
 			$this->localize_pluploader_init_vars();
 		}
-		
-		//Enqueue styles for plupload
-		wp_enqueue_style('plupload-jquery-ui-core');
-		wp_enqueue_style('plupload-jquery-ui');
 		
 	}
 	
@@ -261,7 +379,7 @@ class PrsoGformsAdvUploaderInit {
 		        if( $group["name"] == "advanced_fields" ){ // to add to the Advanced Fields
 		            $group["fields"][] = array(
 		                "class"=>"button",
-		                "value" => __("Pluploader", "prso_gform_pluploader"),
+		                "value" => __("Adv Uploader", "prso_gform_pluploader"),
 		                "onclick" => "StartAddField('prso_gform_pluploader');"
 		            );
 		            break;
@@ -283,7 +401,7 @@ class PrsoGformsAdvUploaderInit {
 	*/
 	public function pluploader_field_type_title( $title, $field_type ) {
 	    if ( $field_type === 'prso_gform_pluploader' ) {
-	        $title = __( 'Pluploader' , 'prso_gform_pluploader' );
+	        $title = __( 'Advanced Uploader' , 'prso_gform_pluploader' );
 	    }
 	    return $title;
 	}
@@ -300,7 +418,9 @@ class PrsoGformsAdvUploaderInit {
 	public function pluploader_field_input ( $input, $field, $value, $lead_id, $form_id ){
 	 	
 	 	//Init vars
-	 	$max_chars 	= NULL;
+	 	$max_chars 			= NULL;
+	 	$container			= NULL;
+	 	$plupload_container = NULL;
 	 	
 	    if ( $field["type"] == "prso_gform_pluploader" ) {
 	        
@@ -319,11 +439,16 @@ class PrsoGformsAdvUploaderInit {
 			//Cache the hidden field taht will store data on uploaded files
 			if( is_admin() ) {
 				
-				$input = "<div class='ginput_container prso_plupload'><span class=\"gform_drop_instructions\">Pluploader</span></div>";
+				$input = "<div class='ginput_container prso_plupload'><span class='gform_drop_instructions'>Advanced Uploader</span></div>";
 				
 			} else {
 				
-				$input = "<div class='ginput_container prso_plupload'><input name='input_%s' id='%s' type='hidden' /></div>";
+				ob_start();
+				?>
+				<div class='ginput_container prso_plupload'><input name='input_%s' id='%s' type='hidden' /></div>
+				<?php
+				$input = ob_get_contents();
+				ob_end_clean();
 				
 			}
 			
@@ -334,10 +459,40 @@ class PrsoGformsAdvUploaderInit {
 	        );
 			
 			//Cache the div element used by pluploader jquery plugin
-			$plupload_container = sprintf(
-				"<div id='pluploader_%s'></div>",
-				$field["id"]
-			);
+			if( !is_admin() ) {
+				
+				switch( $this->user_interface ) {
+					case 'custom':
+						
+						ob_start();
+						?>
+						<div id="filelist"><?php _ex( "Your browser doesn't have Flash, Silverlight or HTML5 support.", 'user alert message', 'prso_gform_pluploader' ); ?></div>
+						<div id='pluploader_%s'>
+							<a id="pickfiles" href="javascript:;">[Select files]</a> 
+						    <a id="uploadfiles" href="javascript:;">[Upload files]</a>
+						</div>
+						<?php
+						$container = ob_get_contents();
+						ob_end_clean();
+						
+						break;
+					default:
+						ob_start();
+						?>
+						<div id="filelist"><?php _ex( "Your browser doesn't have Flash, Silverlight or HTML5 support.", 'user alert message', 'prso_gform_pluploader' ); ?></div>
+						<div id='pluploader_%s'></div>
+						<?php
+						$container = ob_get_contents();
+						ob_end_clean();
+						break;
+				}
+				
+				$plupload_container = sprintf(
+					$container,
+					$field["id"]
+				);
+					
+			}
 			
 			//Run through filter to allow devs to move the div outside the form it they wish
 			$input.= apply_filters( 'prso_gform_pluploader_container', $plupload_container, $field, $form_id );
@@ -364,35 +519,26 @@ class PrsoGformsAdvUploaderInit {
 		    jQuery(document).ready(function($) {
 		 
 		        //View forms.js for examples of options
-		        fieldSettings["prso_gform_pluploader"] = ".label_setting, .description_setting, .admin_label_setting, .css_class_setting, .prso_pluploader_file_extensions_setting, .prso_pluploader_file_size_setting, .prso_pluploader_file_chunk_setting, .prso_pluploader_auto_upload_setting, .prso_pluploader_max_files_setting";
+		        fieldSettings["prso_gform_pluploader"] = ".label_setting, .description_setting, .admin_label_setting, .css_class_setting, .prso_pluploader_file_extensions_setting, .prso_pluploader_file_size_setting, .prso_pluploader_max_files_setting";
 		        
 		        //Hook into gform load field settings to initialize file extension settings
 		        jQuery(document).bind( "gform_load_field_settings", function(event, field, form){
 		        
 			        //Populate file extensions with data if set
+			        if( field["prso_pluploader_file_extensions"] === '' || typeof field["prso_pluploader_file_extensions"] == 'undefined' ) {
+				        field["prso_pluploader_file_extensions"] = '<?php echo $this->plugin_options['filter_file_type']; ?>';
+			        }
 			        jQuery("#prso_pluploader_file_extensions").val( field["prso_pluploader_file_extensions"] );
 			        
 			        //Populate file size with data if set
 			        if( field["prso_pluploader_file_size"] === '' || typeof field["prso_pluploader_file_size"] == 'undefined' ) {
-				        field["prso_pluploader_file_size"] = 1;
+				        field["prso_pluploader_file_size"] = '<?php echo $this->plugin_options['max_file_size']; ?>';
 			        }
 			        jQuery("#prso_pluploader_file_size").val( field["prso_pluploader_file_size"] );
 			        
-			        //Populate file chunking with data
-			        if( field["prso_pluploader_file_chunk"] === '' || typeof field["prso_pluploader_file_chunk"] == 'undefined' ) {
-				        field["prso_pluploader_file_chunk"] = 'true';
-			        }
-			        jQuery("#prso_pluploader_file_chunk").val( field["prso_pluploader_file_chunk"] );
-			        
-			        //Populate auto upload field with data
-			        if( field["prso_pluploader_auto_upload"] === '' || typeof field["prso_pluploader_auto_upload"] == 'undefined' ) {
-				        field["prso_pluploader_auto_upload"] = 'true';
-			        }
-			        jQuery("#prso_pluploader_auto_upload").val( field["prso_pluploader_auto_upload"] );
-			        
 			        //Populate max file numbers
 			        if( field["prso_pluploader_max_files"] === '' || typeof field["prso_pluploader_max_files"] == 'undefined' ) {
-				        field["prso_pluploader_max_files"] = '2';
+				        field["prso_pluploader_max_files"] = '<?php echo $this->plugin_options['max_files']; ?>';
 			        }
 			        jQuery("#prso_pluploader_max_files").val( field["prso_pluploader_max_files"] );
 			        
@@ -413,6 +559,16 @@ class PrsoGformsAdvUploaderInit {
                <input type="text" onkeyup="SetFieldProperty('prso_pluploader_file_extensions', this.value);" size="40" id="prso_pluploader_file_extensions">
                <div><small>Separated with commas (i.e. jpg, gif, png, pdf)</small></div>
             </li>
+            <li class="prso_pluploader_max_files_setting field_setting" style="display: list-item;">
+               <label for="prso_pluploader_max_files">Max number of files</label>
+               <input type="text" onkeyup="SetFieldProperty('prso_pluploader_max_files', this.value);" size="40" id="prso_pluploader_max_files" >
+               <div><small>Number of files users can upload (defaults to 2)</small></div>
+            </li>
+            <li class="prso_pluploader_file_size_setting field_setting" style="display: list-item;">
+               <label for="prso_pluploader_file_size">Maximum file size (MB)</label>
+               <input type="text" onkeyup="SetFieldProperty('prso_pluploader_file_size', this.value);" size="40" id="prso_pluploader_file_size" >
+               <div><small>Max file size in MB (defaults to 1MB)</small></div>
+            </li>
 		<?php
 		}
 		
@@ -422,26 +578,7 @@ class PrsoGformsAdvUploaderInit {
 		
 		if( isset($position) && $position == 0 ) {
 		?>
-			<li class="prso_pluploader_file_size_setting field_setting" style="display: list-item;">
-               <label for="prso_pluploader_file_size">Maximum file size (MB)</label>
-               <input type="text" onkeyup="SetFieldProperty('prso_pluploader_file_size', this.value);" size="40" id="prso_pluploader_file_size" >
-               <div><small>Max file size in MB (defaults to 1MB)</small></div>
-            </li>
-            <li class="prso_pluploader_max_files_setting field_setting" style="display: list-item;">
-               <label for="prso_pluploader_max_files">Max number of files</label>
-               <input type="text" onkeyup="SetFieldProperty('prso_pluploader_max_files', this.value);" size="40" id="prso_pluploader_max_files" >
-               <div><small>Number of files users can upload (defaults to 2)</small></div>
-            </li>
-            <li class="prso_pluploader_auto_upload_setting field_setting" style="display: list-item;">
-               <label for="prso_pluploader_auto_upload">Auto Uploading</label>
-               <input type="text" onkeyup="SetFieldProperty('prso_pluploader_auto_upload', this.value);" size="40" id="prso_pluploader_auto_upload" >
-               <div><small>Files start uploading as they are added to queue (true/false)</small></div>
-            </li>
-            <li class="prso_pluploader_file_chunk_setting field_setting" style="display: list-item;">
-               <label for="prso_pluploader_file_chunk">Activate file chunking</label>
-               <input type="text" onkeyup="SetFieldProperty('prso_pluploader_file_chunk', this.value);" size="40" id="prso_pluploader_file_chunk" >
-               <div><small>Allows large file uploads (true/false)</small></div>
-            </li>
+			
 		<?php
 		}
 		
@@ -503,43 +640,19 @@ class PrsoGformsAdvUploaderInit {
 	public function activate_plupload_uploader( $form = array(), $field = array() ) {
 		
 		//Init vars
+		global $prso_gforms_adv_uploader_options;
 		$args = array();
 		$output = NULL;
-		
-		//Set defaults for uploader args
-		$defaults['basic']	= array(
-			'debug'							=>	'false',
-			'button'						=>	'null',
-			'multiple'						=>	'true',
-			'maxConnections'				=>	3,
-			'disableCancelForFormUploads'	=>	'false',
-			'autoUpload'					=>	'true'
-		);
-		
-		//Set defaults for validation args
-		$defaults['validation']	= array(
-			'allowedExtensions'			=>	array(),
-			'acceptFiles'				=>	'null',
-			'sizeLimit'					=>	0,
-			'minSizeLimit'				=>	0,
-			'stopOnFirstInvalidFile'	=>	'true'
-		);
-		
-		//Set defaults for chunking args
-		$defaults['chunking']	= array(
-			'enabled'			=>	false,
-			'partSize'			=>	''
-		);
 		
 		if( !empty($field) && isset($field['id']) ) {
 			
 			//Cache any validation settings for this field
 			$args['validation']['allowedExtensions'] = 'jpeg,bmp,png,gif';
-			if( isset($field['prso_pluploader_file_extensions']) && !empty($field['prso_pluploader_file_extensions']) ) {
+			if( isset($this->plugin_options['filter_file_type']) ) {
 				$file_ext_validation = array();
 				
 				//Explode comma separated values
-				$file_ext_validation = explode( ',', esc_attr($field['prso_pluploader_file_extensions']) );
+				$file_ext_validation = explode( ',', esc_attr($this->plugin_options['filter_file_type']) );
 				
 				//Loop array of extensions and form a string for javascript array
 				if( !empty($file_ext_validation) && is_array($file_ext_validation) ) {
@@ -572,29 +685,49 @@ class PrsoGformsAdvUploaderInit {
 			}
 			
 			//Cache the file chunking options
-			$args['chunking']['enabled'] = FALSE;
-			if( isset($field['prso_pluploader_file_chunk']) && !empty($field['prso_pluploader_file_chunk']) ) {
-				$enable_chunking = $field['prso_pluploader_file_chunk'];
+			$args['chunking']['enabled'] = 0;
+			if( isset($this->plugin_options['chunk_status']) && ($this->plugin_options['chunk_status'] == 1) ) {
 				
-				if( !empty($enable_chunking) && $enable_chunking != 'false' ) {
-					$args['chunking']['enabled'] = '1mb';
-				}
+				$args['chunking']['enabled'] = $this->plugin_options['chunk_size'] . 'mb';
 				
 			}
 			
+			//Cache duplicates_status option
+			$args['duplicates_status'] = true;
+			if( isset($this->plugin_options['duplicates_status']) ) {
+				$args['duplicates_status'] 	= (bool) $this->plugin_options['duplicates_status'];
+			}
+			
+			//Cache drag drop option
+			$args['drag_drop_status'] = false;
+			if( isset($this->plugin_options['drag_drop_status']) ) {
+				$args['drag_drop_status'] 	= (bool) $this->plugin_options['drag_drop_status'];
+			}
+			
 			//Cache auto upload option
-			$args['auto_upload'] = true;
-			if( isset($field['prso_pluploader_auto_upload']) && !empty($field['prso_pluploader_auto_upload']) ) {
-				
-				$auto_upload = esc_attr( $field['prso_pluploader_auto_upload'] );
-				
-				if( $auto_upload == 'true' ) {
-					$auto_upload = true;
-				} elseif( $auto_upload == 'false' ) {
-					$auto_upload = false;
-				}
-				
-				$args['auto_upload'] 	= $auto_upload;
+			$args['auto_upload'] = false;
+			if( isset($this->plugin_options['auto_upload_status']) ) {
+				$args['auto_upload'] 	= (bool) $this->plugin_options['auto_upload_status'];
+			}
+			
+			//JQuery UI Settings
+			$args['list_view'] = true;
+			if( isset($this->plugin_options['list_view']) ) {
+				$args['list_view'] 	= (bool) $this->plugin_options['list_view'];
+			}
+			$args['thumb_view'] = false;
+			if( isset($this->plugin_options['thumb_view']) ) {
+				$args['thumb_view'] 	= (bool) $this->plugin_options['thumb_view'];
+			}
+			$args['ui_view'] = 'list';
+			if( isset($this->plugin_options['ui_view']) ) {
+				$args['ui_view'] 	= $this->plugin_options['ui_view'];
+			}
+			
+			//Custom UI Settings
+			$args['browse_button_dom_id'] = 'pickfiles';
+			if( isset($this->plugin_options['browse_button_dom_id']) ) {
+				$args['browse_button_dom_id'] 	= $this->plugin_options['browse_button_dom_id'];
 			}
 			
 			//Cache the unique field identifier plupload action
@@ -651,7 +784,7 @@ class PrsoGformsAdvUploaderInit {
 					$local_vars[$field_id]['auto_upload'] 			= $uploader_args['auto_upload'];
 					
 					//Runtimes
-					$local_vars[$field_id]['runtimes'] 				= 'flash,html5,browserplus,silverlight,gears,html4';
+					$local_vars[$field_id]['runtimes'] 				= 'html5,flash,silverlight,html4';
 					
 					//Request url - wp ajax request
 					$local_vars[$field_id]['wp_ajax_url'] 			= admin_url('admin-ajax.php');
@@ -675,10 +808,28 @@ class PrsoGformsAdvUploaderInit {
 					$local_vars[$field_id]['filters']['files'] 		= $uploader_args['validation']['allowedExtensions'];
 					
 					//Cache url to Flash file
-					$local_vars[$field_id]['flash_url'] 			= includes_url('/js/plupload/plupload.flash.swf');
+					$local_vars[$field_id]['flash_url'] 			= plugins_url( '/inc/js/plupload/Moxie.swf', __FILE__);
 					
 					//Cache url to Silverlight url
-					$local_vars[$field_id]['silverlight_url'] 		= includes_url('/js/plupload/plupload.silverlight.xap');
+					$local_vars[$field_id]['silverlight_url'] 		= plugins_url( '/inc/js/plupload/Moxie.xap', __FILE__);
+					
+					//JQuery UI Settings
+					$local_vars[$field_id]['list_view']				= $uploader_args['list_view'];
+					$local_vars[$field_id]['thumb_view']			= $uploader_args['thumb_view'];
+					$local_vars[$field_id]['ui_view']				= esc_attr($uploader_args['ui_view']);
+					
+					//Custom UI Settings
+					$local_vars[$field_id]['browse_button_dom_id']	= esc_attr($uploader_args['browse_button_dom_id']);
+					
+					//Cache drag drop option
+					$local_vars[$field_id]['drag_drop_status']			= $uploader_args['drag_drop_status'];
+					
+					//Cache duplicates_status option
+					$local_vars[$field_id]['duplicates_status']			= $uploader_args['duplicates_status'];
+					
+					//Set some basic translation strings
+					$local_vars[$field_id]['i18n']['server_error'] 		= _x( "Server Error. File might be too large.", 'user error message', 'prso_gform_pluploader' );
+					$local_vars[$field_id]['i18n']['file_limit_error'] 	= _x( "Max file limit reached", 'user error message', 'prso_gform_pluploader' );
 					
 				}
 			}
@@ -834,8 +985,8 @@ class PrsoGformsAdvUploaderInit {
 							$validation_args['sizeLimit'] = $this->toBytes( $form_field['prso_pluploader_file_size'] . 'm' );
 						}
 						
-						if( isset($form_field['prso_pluploader_file_chunk']) && !empty($form_field['prso_pluploader_file_chunk']) ) {
-							$validation_args['enable_chunked'] = (bool) $form_field['prso_pluploader_file_chunk'];
+						if( isset($this->plugin_options['chunk_status']) ) {
+							$validation_args['enable_chunked'] = (bool) $this->plugin_options['chunk_status'];
 						}
 						
 					}

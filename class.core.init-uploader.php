@@ -1,4 +1,36 @@
 <?php
+/**
+* PrsoGformsAdvUploaderInit
+* 
+* This class adds a new custom field type to Gravity Forms called 'Advanced Uploader'.
+* The new field outputs an advanced file uploader to any form based on Plupload jquery plugin.
+* 
+* Plugin options allow devs to quickly alter advanced Plupload parameters from the admin area.
+* These are then applied to all advanced upload fields in forms. Some parameters such as file size and
+* allowed file extensions can be overriden on a field by field bases via the Gravity Forms field settings.
+*
+* File Upload Process:
+* 1. Plupload uploads files to temp folder in uploads folder, filename is encrypted in DOM.
+* 2. Once form is succesfully submitted then files are added as wordpress attachments in media library
+*	 they are validated, given a randomly created filename (security measure) before adding to library
+* 3. Meta data on file attachment is added to Gravity Forms entry table so that files can be displayed
+*	 in form entry view with link to each file in media library
+* 4. An option is added to entry view to allow attachments to be auto deleted when a form entry is deleted,
+*	 although this is not required and files can stay in media library after entry is deleted.
+*
+* Security and Validation:
+* 1. Empty index.php file is added to temp folder used by plupload in uploads dir
+* 2. htaccess file is also added to folder to prevent scripts from running - see qqFileUploader.php
+* 3. Both file extension AND mime type are validated when plupload attempts to save file into tmp dir
+*	 finfo_file() is used to extract the mime type which is compared against $this->allowed_mimes which
+*	 uses get_allowed_mime_types(); This can be filtered via 'prso_adv_uploader_reject_mimes'
+* 4. Files uploaded to tmp dir by plupload have names encrypted and stored in a gravity forms input field in the dom
+*	 file names are decrypted once the form has been submitted and the files are being processed into media library
+* 5. Enryption of tmp file names in the dom should help prevent malicious code from being added and run from tmp folder.
+*	 That said the htaccess, index.php, and mime validation should prevent that anyway.
+* 
+* @author	Ben Moody
+*/
 
 class PrsoGformsAdvUploaderInit {
 	
@@ -16,6 +48,8 @@ class PrsoGformsAdvUploaderInit {
 	protected $plugin_options						= array();
 	protected $user_interface						= NULL;
 	
+	protected $allowed_mimes						= array();
+	
 	//Gforms meta keys
 	private static $delete_files_meta_key		= 'prso-pluploader-delete-files';
 	
@@ -27,7 +61,7 @@ class PrsoGformsAdvUploaderInit {
  		$this->plugin_inc_path = PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc';
  		
  		//Cache plugin options
- 		$this->plugin_options = get_option('prso_gforms_adv_uploader_options');
+ 		$this->plugin_options = get_option( PRSOGFORMSADVUPLOADER__OPTIONS_NAME );
  		
  		//Cache UI
  		$this->user_interface = $this->plugin_options['ui_select'];
@@ -66,6 +100,16 @@ class PrsoGformsAdvUploaderInit {
 		if( file_exists($tos_path) ) {
 			include_once( $tos_path );
 			new PrsoGformsTermsFunctions();
+		}
+		
+		//Include Video Uploader plugin if requested
+		if( isset($this->plugin_options['video_plugin_status']) && ($this->plugin_options['video_plugin_status'] == 1) ) {
+			$video_path = $this->plugin_inc_path . '/VideoUploader/class.prso-adv-video-uploader.php';
+			
+			if( file_exists($video_path) ) {
+				include_once( $video_path );
+				new PrsoAdvVideoUploader();
+			}
 		}
 		
 	}
@@ -298,6 +342,11 @@ class PrsoGformsAdvUploaderInit {
 	* @author	Ben Moody
 	*/
 	public function add_actions() {
+		
+		//Cache array of mime types to reject out of hand
+ 		$this->allowed_mimes = apply_filters( 'prso_adv_uploader_reject_mimes', 
+ 			get_allowed_mime_types()
+ 		);
 		
 		//Execute javascript required to add custom field settings menu
 		add_action( "gform_editor_js", array($this, 'pluploader_editor_js') );
@@ -648,11 +697,11 @@ class PrsoGformsAdvUploaderInit {
 			
 			//Cache any validation settings for this field
 			$args['validation']['allowedExtensions'] = 'jpeg,bmp,png,gif';
-			if( isset($this->plugin_options['filter_file_type']) ) {
+			if( isset($field['prso_pluploader_file_extensions']) ) {
 				$file_ext_validation = array();
 				
 				//Explode comma separated values
-				$file_ext_validation = explode( ',', esc_attr($this->plugin_options['filter_file_type']) );
+				$file_ext_validation = explode( ',', esc_attr($field['prso_pluploader_file_extensions']) );
 				
 				//Loop array of extensions and form a string for javascript array
 				if( !empty($file_ext_validation) && is_array($file_ext_validation) ) {
@@ -908,7 +957,8 @@ class PrsoGformsAdvUploaderInit {
 			$uploader->enable_chunked = $validation_args['enable_chunked'];
 		}
 		
-		
+		//Cache array of mime types to reject
+		$uploader->allowed_mimes = $this->allowed_mimes;
 		
 		//Get wordpress uploads dir path
 		$wp_uploads 		= wp_upload_dir();
@@ -1481,7 +1531,7 @@ class PrsoGformsAdvUploaderInit {
 				
 				foreach( $file_attachment_urls as $key => $file_info ) {
 					
-					if( isset($file_info['url'], $file_info['ext']) ) {
+					if( isset($file_info['url'], $file_info['ext']) && ($file_info['ext'] !== 'N/A') ) {
 						
 						//Cache the file upload number
 						$file_number = $key + 1;
@@ -1493,7 +1543,12 @@ class PrsoGformsAdvUploaderInit {
 						//Cache the file upload number
 						$file_number = $key + 1;
 						
-						$output.= "<a title='Click to view file #{$file_number}' href='{$file_info['url']}' target='_blank'>View File #{$file_number} (External), </a>";
+						//Get external host domain
+						$external_host 	= NULL;
+						$parse 			= parse_url( $file_info['url'] );
+						$external_host	= esc_attr( $parse['host'] );
+						
+						$output.= "<a title='Click to view file #{$file_number}' href='{$file_info['url']}' target='_blank'>View File #{$file_number} ({$external_host}), </a>";
 						
 					}
 					

@@ -5,7 +5,7 @@
 		//Init vars
 		var LocalizedPluginVars = WpPrsoPluploadPluginVars;
 		
-		//console.log(LocalizedPluginVars);
+		console.log(LocalizedPluginVars);
 		
 		//Loop the plupload field init vars from wordpress and init plupload for each one
 		jQuery.each( LocalizedPluginVars, function( key, PrsoPluploadVars ){

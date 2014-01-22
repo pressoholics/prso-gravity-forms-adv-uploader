@@ -419,6 +419,136 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 			$this->sections[] = array(
 				'type' => 'divide',
 			);
+			
+			$this->sections[] = array(
+				'title' => __('Video Uploads', $this->text_domain),
+				'desc' => __('Video upload service settings', $this->text_domain),
+				'icon' => 'el-icon-cogs',
+			    //'submenu' => false, // Setting submenu to false on a given section will hide it from the WordPress sidebar menu!
+				'fields' => array(	
+				
+					//Video Plugin Status
+					array(
+						'id'			=>'video_plugin_status',
+						'type' 			=> 'switch', 
+						'title' 		=> __('Enable Video Uploader', $this->text_domain),
+						'subtitle'		=> __('Enables the video uploader plugin to upload videos to service', $this->text_domain),
+						'desc' 			=> __('When enabled plugin will intercept any videos uploaded with Adv Uploader and will move them to the video service selected below.', $this->text_domain),
+						"default" 		=> 0,
+					),
+					
+					//Confirmation email
+					array(
+						'id'		=>'confirmation_email',
+						'type' 		=> 'text',
+						'title' 	=> __('Confirmation Email', $this->text_domain),
+						'subtitle' 	=> __('Send alerts when videos are uploaded', $this->text_domain),
+						'desc' 		=> __('Required by some APIs', $this->text_domain),
+						'validate' 	=> 'email',
+						'msg' 		=> 'Invalid Email Address',
+						'default' 	=> ''
+					),
+					
+					//User form submission text
+					array(
+						'id'		=>'user_submit_text',
+						'type' 		=> 'text',
+						'title' 	=> __('Form Submit Text', $this->text_domain),
+						'desc' 		=> __('Text to show user while form submission is processed.', $this->text_domain),
+						'default' 	=> 'Uploading files please wait'
+					),
+					
+					//Video Service APIs
+					array(
+						'id'		=>'api_select',
+						'type' 		=> 'select',
+						'title' 	=> __('Video Service', $this->text_domain), 
+						'subtitle' 	=> __('Select video service API', $this->text_domain),
+						'desc' 		=> __('Service videos will be uploaded to.', $this->text_domain),
+						'options'	=> array(
+							'youtube' 			=> 'YouTube',
+							'brightcove_ftp'	=> 'Brightcove FTP',
+						),
+						'default'	=> 'youtube'
+					),
+					
+					//YouTube API Options
+					array(
+						'required' 	=> array('api_select','=','youtube'),
+						'id'		=>'youtube_api_key_text',
+						'type' 		=> 'text',
+						'title' 	=> __('API Dev App Key', $this->text_domain),
+						'subtitle' 	=> __('Your YouTube developers app key', $this->text_domain),
+						'desc' 		=> __('Docs: https://developers.google.com/youtube/registering_an_application', $this->text_domain),
+						'default' 	=> 'YouTube App Key'
+					),
+					array(
+						'required' 	=> array('api_select','=','youtube'),
+						'id'		=>'youtube_username_text',
+						'type' 		=> 'text',
+						'title' 	=> __('YouTube Username', $this->text_domain),
+						'subtitle' 	=> __('Your YouTube account username', $this->text_domain),
+						'default' 	=> 'YouTube Username'
+					),
+					array(
+						'required' 	=> array('api_select','=','youtube'),
+						'id'		=>'youtube_password_text',
+						'type' 		=> 'text',
+						'title' 	=> __('YouTube Password', $this->text_domain),
+						'subtitle' 	=> __('Your YouTube account password', $this->text_domain),
+						'default' 	=> 'YouTube Password'
+					),
+					
+					//Brightcove API Options
+					array(
+						'required' 	=> array('api_select','=','brightcove_ftp'),
+						'id'		=>'bc_server',
+						'type' 		=> 'text',
+						'title' 	=> __('FTP Server', $this->text_domain),
+						'subtitle' 	=> __('Brightcove FTP server Address', $this->text_domain),
+						'desc' 		=> __('Docs: http://support.brightcove.com/en/video-cloud/docs/using-ftp-batch-provisioning', $this->text_domain),
+						'default' 	=> 'upload.brightcove.com'
+					),
+					array(
+						'required' 	=> array('api_select','=','brightcove_ftp'),
+						'id'		=>'bc_username',
+						'type' 		=> 'text',
+						'title' 	=> __('FTP Username', $this->text_domain),
+						'subtitle' 	=> __('Brigthcove FTP username', $this->text_domain),
+						'default' 	=> 'user@domain.com'
+					),
+					array(
+						'required' 	=> array('api_select','=','brightcove_ftp'),
+						'id'		=>'bc_password',
+						'type' 		=> 'text',
+						'title' 	=> __('FTP Password', $this->text_domain),
+						'subtitle' 	=> __('Brigthcove FTP password', $this->text_domain),
+						'default' 	=> 'FTP Password'
+					),
+					array(
+						'required' 	=> array('api_select','=','brightcove_ftp'),
+						'id'		=>'bc_publisher_id',
+						'type' 		=> 'text',
+						'title' 	=> __('Publisher ID', $this->text_domain),
+						'subtitle' 	=> __('Brightcove Publisher ID', $this->text_domain),
+						'default' 	=> 'Publisher ID'
+					),
+					array(
+						'required' 	=> array('api_select','=','brightcove_ftp'),
+						'id'		=>'bc_preparer',
+						'type' 		=> 'text',
+						'title' 	=> __('Preparer Name', $this->text_domain),
+						'subtitle' 	=> __('Unique name to identify this plugin with Brightcove', $this->text_domain),
+						'default' 	=> 'E.G. MyApp'
+					),
+					
+				)
+			);
+
+
+			$this->sections[] = array(
+				'type' => 'divide',
+			);
 
 
 			if(file_exists(trailingslashit(dirname(__FILE__)) . 'README.html')) {

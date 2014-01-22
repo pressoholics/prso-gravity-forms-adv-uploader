@@ -1,5 +1,17 @@
 <?php
-
+/**
+ *	Class - qqFileUploader
+ *	
+ * 	Handles file upload requestd from Plupload.
+ *	
+ *	1. Creates plupload tmp folder in uploads if not created
+ *	2. Adds index.php and htaccess to tmp folder to try and prevent
+ *	   excution of files
+ *  3. Validates file extension and mime type against wordpress allowed mimes
+ *  4. Handles single or chunked upload of files
+ *  5. Also runs a tmp folder cleanup after 1 week or every 1000 requests
+ *
+ */
 class qqFileUploader {
 
     public $allowedExtensions 	= array();
@@ -9,6 +21,7 @@ class qqFileUploader {
     public $chunksFolder 		= 'chunks';
     public $cleanupTargetDir	= TRUE;
     public $maxFileAge			= NULL;
+    public $allowed_mimes		= array();
 
     public $chunksCleanupProbability = 0.001; // Once in 1000 requests on avg
     public $chunksExpireIn = 604800; // One week
@@ -197,7 +210,6 @@ class qqFileUploader {
         }
 
         // Validate file extension
-
         $pathinfo = pathinfo($name);
         $ext = isset($pathinfo['extension']) ? $pathinfo['extension'] : '';
 
@@ -211,6 +223,27 @@ class qqFileUploader {
             		'message' => sprintf( __("File has an invalid extension, it should be one of %s.", "prso-gforms-plupload"), $these )
             	)
             );
+        } else {
+	        
+	        // Validate mime type
+			$finfo 		= finfo_open(FILEINFO_MIME_TYPE);
+			$mime_type	= finfo_file($finfo, $_FILES[$this->inputName]['tmp_name']);
+			finfo_close($finfo);
+	        
+	        //Stop nasty mime types
+	        if( !in_array($mime_type, array_values($this->allowed_mimes)) ) {
+		        
+		        return array(
+	            	'result' 	=> 'error',
+	            	'file_uid'	=> $uuid,
+	            	'error' 	=> array( 
+	            		'code' => 100,
+	            		'message' => sprintf( __("File Type Error: %s.", "prso-gforms-plupload"), $mime_type )
+	            	)
+	            );
+		        
+	        }
+	        
         }
         
         // Remove old temp files	

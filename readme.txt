@@ -11,13 +11,16 @@ Chunked Multiple file uploads, Auto upload of videos to YouTube & Brightcove, Fi
 
 == Description ==
 
-* Large file support with chunked uploads, get around server upload limits
+[youtube http://www.youtube.com/watch?v=k4cKarrr4aE]
+
 * Need more control over Gravity Forms multiple file uploads. 
 * Want to store file uploads in Wordpress media library. 
+* Large file support with chunked uploads, get around server upload limits
 * Like a choice of upload user interfaces (jQuery UI, Queue, Custom)
 * Need advanced control over plupload options
 * Would like to store uploaded videos on YouTube account (also Brightcove. Vimeo coming soon!)
 * Added security and validation
+* Bonus Terms of Service Gravity Forms field with optional submit disable feature
 
 This is the Gravity Forms uploader plugin for those who need a little more than the default multi file upload of Gravity Forms v1.8. 
 
@@ -54,6 +57,8 @@ e.g.
 1. Go to Settings -> Gravity Adv Uploader to set all your awesome options
 
 == Frequently Asked Questions ==
+
+More info over at GitHub (https://github.com/pressoholics/prso-gravity-forms-adv-uploader).
 
 = How can i override the uploader UI javascript =
 

@@ -1,4 +1,4 @@
-=== Gravity Forms Advanced Uploader ===
+=== Gravity Forms Advanced File Uploader ===
 Contributors: ben.moody
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html

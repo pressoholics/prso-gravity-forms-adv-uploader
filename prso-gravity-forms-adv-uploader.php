@@ -1,6 +1,6 @@
 <?php
 /*
- * Plugin Name: Gravity Forms Advanced Uploader
+ * Plugin Name: Gravity Forms Advanced File Uploader
  * Plugin URI: 
  * Description: Multiple file uploader with advanced options for Gravity Forms plugin.
  * Author: Benjamin Moody

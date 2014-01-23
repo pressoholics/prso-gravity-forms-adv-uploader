@@ -18,8 +18,6 @@ class PrsoGformsAdvUploader {
 		
 		//Init plugin
 		add_action( 'init', array($this, 'init_plugin') );
-		//add_action( 'admin_init', array($this, 'admin_init_plugin') );
-		//add_action( 'current_screen', array($this, 'current_screen_init_plugin') );
 		
 		//Init plugin core
 		$core_include = $this->plugin_path . 'class.core.init-uploader.php';
@@ -77,57 +75,7 @@ class PrsoGformsAdvUploader {
 		}
 		
 	}
-	
-	/**
-	* admin_init_plugin
-	* 
-	* Used By Action: 'admin_init'
-	* 
-	*
-	* @access 	public
-	* @author	Ben Moody
-	*/
-	public function admin_init_plugin() {
 		
-		//Init vars
-		$options 		= self::$class_config;
-		
-		if( is_admin() ) {
-			
-			
-			
-		}
-		
-	}
-	
-	/**
-	* current_screen_init_plugin
-	* 
-	* Used By Action: 'current_screen'
-	* 
-	* Detects current view and decides if plugin should be activated
-	*
-	* @access 	public
-	* @author	Ben Moody
-	*/
-	public function current_screen_init_plugin() {
-		
-		//Init vars
-		$options 		= self::$class_config;
-		
-		if( is_admin() ) {
-		
-			//Confirm we are on an active admin view
-			if( $this->is_active_view() ) {
-		
-				//Carry out view specific actions here
-				
-			}
-			
-		}
-		
-	}
-	
 	/**
 	* load_redux_options_framework
 	* 
@@ -156,131 +104,6 @@ class PrsoGformsAdvUploader {
 			require_once( $framework_config );
 		}
 		
-	}
-	
-	/**
-	* is_active_view
-	* 
-	* Detects if current admin view has been set as 'active_post_type' in
-	* plugin config options array.
-	* 
-	* @var		array	self::$class_config
-	* @var		array	$active_views
-	* @var		obj		$screen
-	* @var		string	$current_screen
-	* @return	bool	
-	* @access 	protected
-	* @author	Ben Moody
-	*/
-	protected function is_active_view() {
-		
-		//Init vars
-		$options 		= self::$class_config;
-		$active_views	= array();
-		$screen			= get_current_screen();
-		$current_screen	= NULL;
-		
-		//Cache all views plugin will be active on
-		$active_views = $this->get_active_views( $options );
-		
-		//Cache the current view
-		if( isset($screen) ) {
-		
-			//Is this an attachment screen (base:upload or post_type:attachment)
-			if( ($screen->id === 'attachment') || ($screen->id === 'upload') ) {
-				$current_screen = 'attachment';
-			} else {
-				
-				//Cache post type for all others
-				$current_screen = $screen->post_type;
-				
-			}
-			
-			//Cache current screen in class protected var
-			$this->current_screen = $current_screen;
-		}
-		
-		//Finaly lets check if current view is an active view for plugin
-		if( in_array($current_screen, $active_views) ) {
-			return TRUE;
-		} else {
-			return FALSE;
-		}
-		
-	}
-	
-	/**
-	* get_active_views
-	* 
-	* Interates over plugin config options array merging all
-	* 'active_post_type' values into single array
-	* 
-	* @param	array	$options
-	* @var		array	$active_views
-	* @return	array	$active_views
-	* @access 	private
-	* @author	Ben Moody
-	*/
-	protected function get_active_views( $options = array() ) {
-		
-		//Init vars
-		$active_views = array();
-		
-		//Loop options and cache each active post view
-		foreach( $options as $option ) {
-			if( isset($option['active_post_types']) ) {
-				$active_views = array_merge($active_views, $option['active_post_types']);
-			}
-		}
-		
-		return $active_views;
-	}
-	
-	/**
-	 * Helper to set all actions for plugin
-	 */
-	protected function set_admin_actions() {
-		
-		
-		
-	}
-	
-	/**
-	 * Helper to enqueue all scripts/styles for admin views
-	 */
-	public function enqueue_admin_scripts() {
-		
-		//Init vars
-		$js_inc_path 	= $this->plugin_url . 'inc/js/';
-		$css_inc_path 	= $this->plugin_url . 'inc/css/';
-		
-		
-		
-		//Localize vars
-		$this->localize_script();
-		
-	}
-	
-	/**
-	* localize_script
-	* 
-	* Helper to localize all vars required for plugin JS.
-	* 
-	* @var		string	$object
-	* @var		array	$js_vars
-	* @access 	private
-	* @author	Ben Moody
-	*/
-	protected function localize_script() {
-		
-		//Init vars
-		$object 	= 'PrsoPluginFrameworkVars';
-		$js_vars	= array();
-		
-		//Localize vars for ajax requests
-		
-		
-		//wp_localize_script( '', $object, $js_vars );
 	}
 	
 }

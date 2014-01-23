@@ -1,49 +1,47 @@
-
-
-
-
-!!! HEY DONT FORGET THE PLUGIN NAME BELOW !!!!
-
-
-
-
-=== YOUR PLUGIN NAME HERE by Benjamin Moody ===
+=== Gravity Forms Advanced Uploader ===
 Contributors: ben.moody
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
-Tags: 
+Tags: gravity forms, gravity forms file upload, gravity forms file uploader, gravity forms uploader, plupload, gravity forms videos, gravity forms youtube, youtube uploader, youtube file uploader
 Requires at least: 3.0
 Tested up to: 3.8
 Stable tag: 1.0
 
-Here is a short description of the plugin.  This should be no more than 150 characters.  No markup here.
+Chunked Multiple file uploads, Auto upload of videos to YouTube & Brightcove, Files stored in WP Media Library, Advanced options.
 
 == Description ==
 
-This is the long description.  No limit, and you can use Markdown (as well as in the following sections).
+* Large file support with chunked uploads, get around server upload limits
+* Need more control over Gravity Forms multiple file uploads. 
+* Want to store file uploads in Wordpress media library. 
+* Like a choice of upload user interfaces (jQuery UI, Queue, Custom)
+* Need advanced control over plupload options
+* Would like to store uploaded videos on YouTube account (also Brightcove. Vimeo coming soon!)
+* Added security and validation
 
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-Markdown parsed.
+This is the Gravity Forms uploader plugin for those who need a little more than the default multi file upload of Gravity Forms v1.8. 
 
-A few notes about the sections above:
+Note -- if you are running an older version of Gravity Forms without the built in multi file upload you can use this (tested from v1.6 upwards).
 
-*   "Contributors" is a comma separated list of wp.org/wp-plugins.org usernames
-*   "Tags" is a comma separated list of tags that apply to the plugin
-*   "Requires at least" is the lowest version that the plugin will work on
-*   "Tested up to" is the highest version that you've *successfully used to test the plugin*. Note that it might work on
-higher versions... this is just the highest one you've verified.
-*   Stable tag should indicate the Subversion "tag" of the latest stable version, or "trunk," if you use `/trunk/` for
-stable.
+The plugin options page provides you with granular control over many Plupload parameters from file extension filters to chunked uploading and runtimes.
 
-    Note that the `readme.txt` of the stable tag is the one that is considered the defining one for the plugin, so
-if the `/trunk/readme.txt` file says that the stable tag is `4.3`, then it is `/tags/4.3/readme.txt` that'll be used
-for displaying information about the plugin.  In this situation, the only thing considered from the trunk `readme.txt`
-is the stable tag pointer.  Thus, if you develop in trunk, you can update the trunk `readme.txt` to reflect changes in
-your in-development version, without having that information incorrectly disclosed about the current stable version
-that lacks those changes -- as long as the trunk's `readme.txt` points to the correct stable tag.
+All files are uploaded to the Wordpress media library on successful form submission making for easy access and management.
 
-    If no stable tag is provided, it is assumed that trunk is stable, but you should specify "trunk" if that's where
-you put the stable version, in order to eliminate any doubt.
+If you chose to activate the Video Uploader add-on the plugin will detect any video files being uploaded and automatically send them to your YouTube account as private videos awaiting review (Also includes Brightcove FTP, Vimeo API is on its way!).
+
+For the security conscious among you the plugin takes many steps to protect the server from nasty files:
+
+* filename encryption
+* prevention of file execution in tmp folder via htaccess
+* validation of both file extension and mime type
+* crosscheck mime types against Wordpress mime white list
+* filenames changed once added to media library
+
+Large File Support - Enable chunked file uploads to allow for large files uploads and circumvent server uploads limits.
+
+Advanced Customization - If you are a dev and need even more control there are a number of filters and actions to hook into. Also you can make a copy of the ini scripts used to generate each UI. Place them in your theme and just wp_dequeue_script then enqueue_script with your script path and it will have access to all the localized vars.
+
+Please Note -- When using the Video Uploader option, although actual file upload takes place asynchronously. If your server script timeouts are too short you will have problems with larger video files. That said the plugin does try to increase the timeout but it really depends on your hosting setup.
 
 == Installation ==
 
@@ -51,72 +49,64 @@ This section describes how to install the plugin and get it working.
 
 e.g.
 
-1. Upload `plugin-name.php` to the `/wp-content/plugins/` directory
+1. Upload `prso-gravity-forms-adv-uploader` to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Place `<?php do_action('plugin_name_hook'); ?>` in your templates
+1. Go to Settings -> Gravity Adv Uploader to set all your awesome options
 
 == Frequently Asked Questions ==
 
-= A question that someone might have =
+= How can i override the uploader UI javascript =
 
-An answer to that question.
+That depends on the UI you have set in the options:
 
-= What about foo bar? =
+jQuery UI:
 
-Answer to foo bar dilemma.
+* Copy 'init_plupload_jquery_ui.js' from plugin's js directory. Dequeue 'prso-pluploader-init' then requeue 'prso-pluploader-init' pointing to your copy of the script.
+
+Queue UI:
+
+* Copy 'init_plupload_queue.js' from plugin's js directory. Dequeue 'prso-pluploader-init' then requeue 'prso-pluploader-init' pointing to your copy of the script.
+
+Custom UI:
+
+* Copy 'init_plupload_custom.js' from plugin's js directory. Dequeue 'prso-pluploader-init' then requeue 'prso-pluploader-init' pointing to your copy of the script.
+
+Check out the Plupload docs and you can customize anything.
+
+= The Video Uploader addon does not work with large video files =
+
+This is due to your server script timeout settings. The plugin does attempt to set 'max_execution_time' & 'mysql.connect_timeout', but if your host has disabled these options then i'm afraid you are stuck unless you can ask them to increase these for you or you can add your own php.ini.
+
+= File Chunking doesnt work too well in some older browsers =
+
+This option can be hit and miss in some older browsers, that said it works in most of them. Just test it and see.
 
 == Screenshots ==
 
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets 
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png` 
-(or jpg, jpeg, gif).
-2. This is the second screen shot
+1. Shot of jQuery UI version.
+2. Shot of Queue UI version.
+3. Shot of Custom UI version - you set this badboy up!
+4. The options page, lost of param goodness
 
 == Changelog ==
 
 = 1.0 =
-* A change since the previous version.
-* Another change.
-
-= 0.5 =
-* List versions from most recent at top to oldest at bottom.
+* Inital commit to plugin repo
 
 == Upgrade Notice ==
 
 = 1.0 =
-Upgrade notices describe the reason a user should upgrade.  No more than 300 characters.
+This is the first version of plugin.
 
-= 0.5 =
-This version fixes a security related bug.  Upgrade immediately.
+== Hooks ==
 
-== Arbitrary section ==
+Actions:
+* 'prso_gform_pluploader_processed_uploads'
+* 'wp_ajax_nopriv_prso_gforms_youtube_upload_init'
+* 'wp_ajax_nopriv_prso_gforms_youtube_upload_save_data'
+* 'prso_gform_youtube_uploader_pre_get_attachment_data'	-	Allow devs to hook in before getting attachment data
 
-You may provide arbitrary sections, in the same format as the ones above.  This may be of use for extremely complicated
-plugins where more information needs to be conveyed that doesn't fit into the categories of "description" or
-"installation."  Arbitrary sections will be shown below the built-in sections outlined above.
-
-== A brief Markdown Example ==
-
-Ordered list:
-
-1. Some feature
-1. Another feature
-1. Something else about the plugin
-
-Unordered list:
-
-* something
-* something else
-* third thing
-
-Here's a link to [WordPress](http://wordpress.org/ "Your favorite software") and one to [Markdown's Syntax Documentation][markdown syntax].
-Titles are optional, naturally.
-
-[markdown syntax]: http://daringfireball.net/projects/markdown/syntax
-            "Markdown is what the parser uses to process much of the readme file"
-
-Markdown uses email style notation for blockquotes and I've been told:
-> Asterisks for *emphasis*. Double it up  for **strong**.
-
-`<?php code(); // goes in backticks ?>`
+Filters:
+* 'prso_gform_pluploader_container'
+* 'prso_gform_pluploader_server_validation_args'
+* 'prso_gform_pluploader_entry_attachment_links'

@@ -10,7 +10,7 @@ jQuery(document).ready(function(){
 	//Check if we are on the trash edit page
 	publish_action = jQuery('div#publishing-action .button-primary');
 	
-	console.log(prso_gforms_pluploader);
+	//console.log(prso_gforms_pluploader);
 	
 	//If NOT trash edit view
 	if( publish_action.length !== 0 ) {

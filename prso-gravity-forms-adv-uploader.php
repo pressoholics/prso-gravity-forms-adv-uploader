@@ -1,10 +1,10 @@
 <?php
 /*
  * Plugin Name: Gravity Forms Advanced File Uploader
- * Plugin URI: 
+ * Plugin URI: https://github.com/pressoholics/prso-gravity-forms-adv-uploader
  * Description: Multiple file uploader with advanced options for Gravity Forms plugin.
  * Author: Benjamin Moody
- * Version: 1.0
+ * Version: 1.1
  * Author URI: http://www.benjaminmoody.com
  * License: GPL2+
  * Text Domain: prso_gforms_adv_uploader_plugin

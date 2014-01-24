@@ -328,7 +328,7 @@ function getContrastColour(hexcolour){
 function verify_fold(item) {
 	
 	jQuery(document).ready(function($) {
-		console.log(verify_fold);
+		//console.log(verify_fold);
 		
 
 

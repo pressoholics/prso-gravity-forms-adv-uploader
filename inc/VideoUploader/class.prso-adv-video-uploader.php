@@ -364,7 +364,13 @@ class PrsoAdvVideoUploader {
 						
 							$mime_type	= mime_content_type( $file_path );
 							
+						} else {
+							
+							$mime_type = get_post_mime_type( $attachment_id );
+							
 						}
+						
+						//$this->plugin_error_log( $mime_type );
 						
 						if( !empty($file_path) && $mime_type !== FALSE ) {
 						
@@ -463,6 +469,9 @@ class PrsoAdvVideoUploader {
 						}
 						
 					} else {
+						//Unset this attachment from array
+						unset( $wp_attachment_file_info[$field_id][$key] );
+						
 						$this->plugin_error_log( 'Validate Video Files:: Attachment mime type not set' );
 					}
 					

@@ -390,11 +390,12 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 						'type' 		=> 'slider', 
 						'required' 	=> array('chunk_status','=','1'),
 						'title' 	=> __('File Chunk Size (mb)', $this->text_domain),
+						'subtitle'	=> __('Must not exceed PHP Post size limit in php.ini', $this->text_domain),
 						'desc'		=> __('The size of each chunk in mb. Docs: http://www.plupload.com/docs/Options#chunk_size', $this->text_domain),
 						"default" 	=> "1",
 						"min" 		=> "1",
 						"step"		=> "1",
-						"max" 		=> "20",
+						"max" 		=> "5",
 					),
 					
 					//Runtimes
@@ -426,7 +427,16 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 				'icon' => 'el-icon-cogs',
 			    //'submenu' => false, // Setting submenu to false on a given section will hide it from the WordPress sidebar menu!
 				'fields' => array(	
-				
+					
+					array(
+			            'id'=>'info_success',
+			            'type'=>'info',
+			            'style'=>'success',
+			            'icon'=>'el-icon-info-sign',
+			            'title'=> __( 'IMPORTANT NOTICE', $this->text_domain ),
+			            'desc' => __( 'YouTube uploader requires PHP iconv extension. So if it doesn\'t work ask your host to install it', $this->text_domain)
+			        ),
+					
 					//Video Plugin Status
 					array(
 						'id'			=>'video_plugin_status',

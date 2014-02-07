@@ -48,9 +48,7 @@ Please Note -- When using the Video Uploader option, although actual file upload
 
 == Installation ==
 
-This section describes how to install the plugin and get it working.
-
-e.g.
+NOTE: You will require PHP iconv extension installed on server for YouTube uploader to work
 
 1. Upload `prso-gravity-forms-adv-uploader` to the `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
@@ -59,6 +57,14 @@ e.g.
 == Frequently Asked Questions ==
 
 More info over at GitHub (https://github.com/pressoholics/prso-gravity-forms-adv-uploader).
+
+= Videos are not uploaded to YouTube =
+
+The YouTube uploader requires PHP iconv extension to work. Ask your host to install it for you.
+
+= Files are uploading but not shown in media library =
+
+This is probably an issue with the file being larger than PHP post size allows. Try enabling chunked uploads, and be sure that the chunked upload size is not larger than your PHP post size on the server (try 1mb if you have problems).
 
 = How can i override the uploader UI javascript =
 
@@ -98,6 +104,7 @@ This option can be hit and miss in some older browsers, that said it works in mo
 = 1.11 =
 * Some file mime validation improvements and bugfixes
 * Added php error log for video uploader plugin to catch potential async errors
+* Added alerts to the fact that YouTube uploader requires PHP iconv extension
 
 = 1.1 =
 * Commented out instances of javascript console log.

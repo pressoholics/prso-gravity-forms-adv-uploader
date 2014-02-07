@@ -27,6 +27,8 @@ class qqFileUploader {
     public $chunksExpireIn = 604800; // One week
 
     protected $uploadName;
+    
+    private $uuid = NULL; //Upload ID
 
     function __construct(){
     
@@ -64,7 +66,7 @@ class qqFileUploader {
 	    $chunked_input_data_stream = NULL;
 	    
 	    //Cache upload id for current file
-	    $uuid = current( explode('.', $this->getName()) );
+	    $this->uuid = current( explode('.', $this->getName()) );
 	    
         if (is_writable($this->chunksFolder) &&
             1 == mt_rand(1, 1/$this->chunksCleanupProbability)){
@@ -82,7 +84,7 @@ class qqFileUploader {
 	            $size = max(1, $this->sizeLimit / 1024 / 1024) . 'M';
 	            return array(
 	            	'result' 	=> 'error',
-	            	'file_uid'	=> $uuid,
+	            	'file_uid'	=> $this->uuid,
 	            	'error' 	=> array( 
 	            		'code' => 100,
 	            		'message' => __( "Server Error. Max file size too high, try activate chunking.", "prso-gforms-plupload") 
@@ -134,7 +136,7 @@ class qqFileUploader {
         if (!is_writable($uploadDirectory)){
             return array(
 	            	'result' 	=> 'error',
-	            	'file_uid'	=> $uuid,
+	            	'file_uid'	=> $this->uuid,
 	            	'error' 	=> array( 
 	            		'code' => 100,
 	            		'message' => __( "Server error. Uploads directory isn't writable or executable.", "prso-gforms-plupload") 
@@ -146,7 +148,7 @@ class qqFileUploader {
         
             return array(
             	'result' 	=> 'error',
-            	'file_uid'	=> $uuid,
+            	'file_uid'	=> $this->uuid,
             	'error' 	=> array( 
             		'code' => 100,
             		'message' => "No files were uploaded." 
@@ -156,7 +158,7 @@ class qqFileUploader {
         } else if (strpos(strtolower($_SERVER['CONTENT_TYPE']), 'multipart/') !== 0){
             return array(
             	'result' 	=> 'error',
-            	'file_uid'	=> $uuid,
+            	'file_uid'	=> $this->uuid,
             	'error' 	=> array( 
             		'code' => 100,
             		'message' => __( "Server error. Not a multipart request. Please set forceMultipart to default value (true).", "prso-gforms-plupload") 
@@ -177,7 +179,7 @@ class qqFileUploader {
         if ($name === null || $name === ''){
             return array(
             	'result' 	=> 'error',
-            	'file_uid'	=> $uuid,
+            	'file_uid'	=> $this->uuid,
             	'error' 	=> array( 
             		'code' => 100,
             		'message' => __( "File name is empty.", "prso-gforms-plupload") 
@@ -190,7 +192,7 @@ class qqFileUploader {
         if ($size == 0){
             return array(
             	'result' 	=> 'error',
-            	'file_uid'	=> $uuid,
+            	'file_uid'	=> $this->uuid,
             	'error' 	=> array( 
             		'code' => 100,
             		'message' => __( "File is empty.", "prso-gforms-plupload") 
@@ -201,49 +203,12 @@ class qqFileUploader {
         if ($size > $this->sizeLimit){
             return array(
             	'result' 	=> 'error',
-            	'file_uid'	=> $uuid,
+            	'file_uid'	=> $this->uuid,
             	'error' 	=> array( 
             		'code' => 100,
             		'message' => sprintf( __("File is too large. Max %s M", "prso-gforms-plupload"), $this->sizeLimit )
             	)
             );
-        }
-
-        // Validate file extension
-        $pathinfo = pathinfo($name);
-        $ext = isset($pathinfo['extension']) ? $pathinfo['extension'] : '';
-
-        if($this->allowedExtensions && !in_array(strtolower($ext), array_map("strtolower", $this->allowedExtensions))){
-            $these = implode(', ', $this->allowedExtensions);
-            return array(
-            	'result' 	=> 'error',
-            	'file_uid'	=> $uuid,
-            	'error' 	=> array( 
-            		'code' => 100,
-            		'message' => sprintf( __("File has an invalid extension, it should be one of %s.", "prso-gforms-plupload"), $these )
-            	)
-            );
-        } else {
-	        
-	        // Validate mime type
-			$finfo 		= finfo_open(FILEINFO_MIME_TYPE);
-			$mime_type	= finfo_file($finfo, $_FILES[$this->inputName]['tmp_name']);
-			finfo_close($finfo);
-	        
-	        //Stop nasty mime types
-	        if( !in_array($mime_type, array_values($this->allowed_mimes)) ) {
-		        
-		        return array(
-	            	'result' 	=> 'error',
-	            	'file_uid'	=> $uuid,
-	            	'error' 	=> array( 
-	            		'code' => 100,
-	            		'message' => sprintf( __("File Type Error: %s.", "prso-gforms-plupload"), $mime_type )
-	            	)
-	            );
-		        
-	        }
-	        
         }
         
         // Remove old temp files	
@@ -261,10 +226,10 @@ class qqFileUploader {
 			closedir($dir);
 		}
         
-        // Save a chunk
-
+		//Check for chunked uploads
         $totalParts = isset($_REQUEST['chunks']) ? (int)$_REQUEST['chunks'] : 1;
-
+		
+		//Handle chunked uploads
         if ($totalParts > 1){
 
             $chunksFolder = $this->chunksFolder;
@@ -280,7 +245,7 @@ class qqFileUploader {
             if (!is_writable($chunksFolder)){
                 return array(
 	            	'result' 	=> 'error',
-	            	'file_uid'	=> $uuid,
+	            	'file_uid'	=> $this->uuid,
 	            	'error' 	=> array( 
 	            		'code' => 100,
 	            		'message' => __( "Server error. Chunks directory isn't writable or executable.", "prso-gforms-plupload")
@@ -288,7 +253,7 @@ class qqFileUploader {
 	            );
             }
 
-            $targetFolder = $this->chunksFolder.DIRECTORY_SEPARATOR.$uuid;
+            $targetFolder = $this->chunksFolder.DIRECTORY_SEPARATOR.$this->uuid;
 
             if (!file_exists($targetFolder)){
                 mkdir($targetFolder);
@@ -317,7 +282,7 @@ class qqFileUploader {
 				} else {
 					return array(
 		            	'result' 	=> 'error',
-		            	'file_uid'	=> $uuid,
+		            	'file_uid'	=> $this->uuid,
 		            	'error' 	=> array( 
 		            		'code' => 100,
 		            		'message' => __( "Failed to open input stream", "prso-gforms-plupload")
@@ -331,7 +296,7 @@ class qqFileUploader {
 			} else {
 				return array(
 		            	'result' 	=> 'error',
-		            	'file_uid'	=> $uuid,
+		            	'file_uid'	=> $this->uuid,
 		            	'error' 	=> array( 
 		            		'code' => 100,
 		            		'message' => __( "Failed to open chunk destination file", "prso-gforms-plupload")
@@ -350,13 +315,25 @@ class qqFileUploader {
 		            
 		            if( $this->move_file($tmp_chunk_file_path, $target) ) {
 		            	
+		            	//Validate whole tmp file
+			            if( ( $validate_result = $this->validateUploadedFile($name, $target) ) !== TRUE ) {
+					        
+					        //Delete files
+					        @unlink($tmp_chunk_file_path);
+					        @unlink($target);
+					        
+					        //Return result to user
+					        return $validate_result;
+					        
+				        }
+		            	
 		            	//Remove the chunk tmp folder for this file
 		            	rmdir($targetFolder);
 		            	
 		            	//Return that all is ok
 			            return array(
 			            	'result' 	=> 'success',
-			            	'file_uid'	=> $uuid,
+			            	'file_uid'	=> $this->uuid,
 			            	'success' 	=> array( 
 			            		"file_id" => $file_info['file_name']
 			            	)
@@ -365,7 +342,7 @@ class qqFileUploader {
 		            } else {
 			            return array(
 			            	'result' 	=> 'error',
-			            	'file_uid'	=> $uuid,
+			            	'file_uid'	=> $this->uuid,
 			            	'error' 	=> array( 
 			            		'code' => 100,
 			            		'message' => __( "Failed to move final buffer file", "prso-gforms-plupload")
@@ -376,7 +353,7 @@ class qqFileUploader {
 	            } else {
 		            return array(
 			            	'result' 	=> 'error',
-			            	'file_uid'	=> $uuid,
+			            	'file_uid'	=> $this->uuid,
 			            	'error' 	=> array( 
 			            		'code' => 100,
 			            		'message' => __( "Error generating final file path", "prso-gforms-plupload")
@@ -390,8 +367,16 @@ class qqFileUploader {
 
         } else {
 	        
+	        //Validate file for NON-Chunked uploads
+	        if( ( $validate_result = $this->validateUploadedFile($name) ) !== TRUE ) {
+		        //Delete files
+				@unlink($_FILES[$this->inputName]['tmp_name']);
+		        
+		        return $validate_result;
+	        }
+	        
 	        $file_info = $this->getUniqueTargetPath($uploadDirectory, $name);
-	        $uuid = current( explode('.', $name) );
+	        $this->uuid = current( explode('.', $name) );
 	        
 	        if( isset($file_info['file_name'], $file_info['file_path'], $_FILES[$this->inputName]['tmp_name']) ) {
 		        
@@ -403,7 +388,7 @@ class qqFileUploader {
 	                if (move_uploaded_file($_FILES[$this->inputName]['tmp_name'], $target)){
 	                    return array(
 			            	'result' 	=> 'success',
-			            	'file_uid'	=> $uuid,
+			            	'file_uid'	=> $this->uuid,
 			            	'success' 	=> array( 
 			            		"file_id" => $file_info['file_name']
 			            	)
@@ -415,7 +400,7 @@ class qqFileUploader {
 	        
             return array(
             	'result' 	=> 'error',
-            	'file_uid'	=> $uuid,
+            	'file_uid'	=> $this->uuid,
             	'error' 	=> array( 
             		'code' => 100,
             		'message' => __( "The upload was cancelled, or server error encountered", "prso-gforms-plupload")
@@ -423,7 +408,81 @@ class qqFileUploader {
             );
         }
     }
+	
+	/**
+	* validateUploadedFile
+	* 
+	* Validates both a files extension and then the mime type
+	* Mime type is compared to the wordpress allowed mime types array
+	* 
+	* Note that the method prefers to use finfo to check the mime type but falls
+	* back to mime_content_type() and then no mime validation if neither function is available
+	* 
+	* @param	string	$name
+	* @param	string	$file_path - defaults to $_FILES[$this->inputName]['tmp_name']
+	* @return	mixed	array/bool
+	* @access 	protected
+	* @author	Ben Moody
+	*/
+	protected function validateUploadedFile( $name = NULL, $file_path = NULL ) {
+		
+		//Init vars
+		$mime_type = NULL;
+		
+		if( !isset($file_path) ) {
+			$file_path = $_FILES[$this->inputName]['tmp_name'];
+		}
+		
+		// Validate file extension
+        $pathinfo = pathinfo($name);
+        $ext = isset($pathinfo['extension']) ? $pathinfo['extension'] : '';
 
+        if($this->allowedExtensions && !in_array(strtolower($ext), array_map("strtolower", $this->allowedExtensions))){
+            $these = implode(', ', $this->allowedExtensions);
+            
+            return array(
+            	'result' 	=> 'error',
+            	'file_uid'	=> $this->uuid,
+            	'error' 	=> array( 
+            		'code' => 100,
+            		'message' => sprintf( __("File has an invalid extension, it should be one of %s.", "prso-gforms-plupload"), $these )
+            	)
+            );
+            
+        }
+       
+		//VALIDATE MIME TYPE - comapre to wordpress allowed mime types array
+		
+		//First check which php tools we have
+		if( function_exists('finfo_open') ) {
+		
+			$finfo 		= finfo_open(FILEINFO_MIME_TYPE);
+			$mime_type	= finfo_file($finfo, $file_path);
+			finfo_close($finfo);
+	        
+		} elseif( function_exists('mime_content_type') ) {
+		
+			$mime_type	= mime_content_type( $file_path );
+			
+		}
+		
+		//Stop nasty mime types
+        if( !empty($mime_type) && !in_array($mime_type, array_values($this->allowed_mimes)) ) {
+	        
+	        return array(
+            	'result' 	=> 'error',
+            	'file_uid'	=> $this->uuid,
+            	'error' 	=> array( 
+            		'code' => 100,
+            		'message' => sprintf( __("File Type Error: %s.", "prso-gforms-plupload"), $mime_type )
+            	)
+            );
+	        
+        }
+		
+		return TRUE;
+	}
+	
     /**
      * Returns a path to use with this upload. Check that the name does not exist,
      * and appends a suffix otherwise.

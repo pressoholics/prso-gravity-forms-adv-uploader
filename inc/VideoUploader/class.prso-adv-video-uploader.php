@@ -28,6 +28,7 @@ class PrsoAdvVideoUploader {
 	*/
 	protected $plugin_includes = NULL;
 	
+	protected 	$plugin_path			= PRSOGFORMSADVUPLOADER__PLUGIN_DIR;
 	protected 	$data 					= array();
 	protected	$plugin_options_slug	= PRSOGFORMSADVUPLOADER__OPTIONS_NAME;
 	private		$selected_api 			= NULL;
@@ -901,7 +902,7 @@ class PrsoAdvVideoUploader {
 		
 		@ini_set('log_errors','On');
 		@ini_set('display_errors','Off');
-		@ini_set('error_log', $this->plugin_root . '/php_error.log');
+		@ini_set('error_log', $this->plugin_path . '/php_error.log');
 		
 		if( !is_string($var) ) {
 			error_log( print_r($var, true) );

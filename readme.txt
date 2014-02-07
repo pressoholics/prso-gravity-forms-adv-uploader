@@ -58,6 +58,10 @@ NOTE: You will require PHP iconv extension installed on server for YouTube uploa
 
 More info over at GitHub (https://github.com/pressoholics/prso-gravity-forms-adv-uploader).
 
+= Entries are not appearing in admin area =
+
+Gravity forms requires that each form has at least 1 gravity forms field to show results. So if you have just the uploader in your form try adding a text field or something similar. I will look into a work around in future updates.
+
 = Videos are not uploaded to YouTube =
 
 The YouTube uploader requires PHP iconv extension to work. Ask your host to install it for you.

@@ -351,9 +351,20 @@ class PrsoAdvVideoUploader {
 						$file_path = get_attached_file( $attachment_id );
 						
 						//Get mime type for current wp attachment
-						$finfo 		= finfo_open(FILEINFO_MIME_TYPE);
-						$mime_type	= finfo_file($finfo, $file_path);
-						finfo_close($finfo);
+						$mime_type = NULL;
+						
+						//First check which php tools we have
+						if( function_exists('finfo_open') ) {
+						
+							$finfo 		= finfo_open(FILEINFO_MIME_TYPE);
+							$mime_type	= finfo_file($finfo, $file_path);
+							finfo_close($finfo);
+					        
+						} elseif( function_exists('mime_content_type') ) {
+						
+							$mime_type	= mime_content_type( $file_path );
+							
+						}
 						
 						if( !empty($file_path) && $mime_type !== FALSE ) {
 						

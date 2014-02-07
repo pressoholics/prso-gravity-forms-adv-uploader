@@ -409,9 +409,26 @@ class qqFileUploader {
         }
     }
 	
+	/**
+	* validateUploadedFile
+	* 
+	* Validates both a files extension and then the mime type
+	* Mime type is compared to the wordpress allowed mime types array
+	* 
+	* Note that the method prefers to use finfo to check the mime type but falls
+	* back to mime_content_type() and then no mime validation if neither function is available
+	* 
+	* @param	string	$name
+	* @param	string	$file_path - defaults to $_FILES[$this->inputName]['tmp_name']
+	* @return	mixed	array/bool
+	* @access 	protected
+	* @author	Ben Moody
+	*/
 	protected function validateUploadedFile( $name = NULL, $file_path = NULL ) {
 		
 		//Init vars
+		$mime_type = NULL;
+		
 		if( !isset($file_path) ) {
 			$file_path = $_FILES[$this->inputName]['tmp_name'];
 		}
@@ -434,13 +451,23 @@ class qqFileUploader {
             
         }
        
-		// Validate mime type
-		$finfo 		= finfo_open(FILEINFO_MIME_TYPE);
-		$mime_type	= finfo_file($finfo, $file_path);
-		finfo_close($finfo);
-        
-        //Stop nasty mime types
-        if( !in_array($mime_type, array_values($this->allowed_mimes)) ) {
+		//VALIDATE MIME TYPE - comapre to wordpress allowed mime types array
+		
+		//First check which php tools we have
+		if( function_exists('finfo_open') ) {
+		
+			$finfo 		= finfo_open(FILEINFO_MIME_TYPE);
+			$mime_type	= finfo_file($finfo, $file_path);
+			finfo_close($finfo);
+	        
+		} elseif( function_exists('mime_content_type') ) {
+		
+			$mime_type	= mime_content_type( $file_path );
+			
+		}
+		
+		//Stop nasty mime types
+        if( !empty($mime_type) && !in_array($mime_type, array_values($this->allowed_mimes)) ) {
 	        
 	        return array(
             	'result' 	=> 'error',

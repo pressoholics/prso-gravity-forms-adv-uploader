@@ -5,7 +5,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: gravity forms, gravity forms file upload, gravity forms file uploader, gravity forms uploader, plupload, gravity forms videos, gravity forms youtube, youtube uploader, youtube file uploader
 Requires at least: 3.0
 Tested up to: 3.8
-Stable tag: 1.11
+Stable tag: 1.12
 
 Chunked Multiple file uploads, Auto upload of videos to YouTube & Brightcove, Files stored in WP Media Library, Advanced options.
 
@@ -104,6 +104,10 @@ This option can be hit and miss in some older browsers, that said it works in mo
 4. The options page, lost of param goodness
 
 == Changelog ==
+
+= 1.12 =
+* Made PHP Mcrypt extension optional - would cause upload errors on servers without it
+* Added plugin option to save video files on server after upload via video upload api
 
 = 1.11 =
 * Some file mime validation improvements and bugfixes

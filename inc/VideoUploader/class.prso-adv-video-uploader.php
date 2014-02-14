@@ -659,7 +659,18 @@ class PrsoAdvVideoUploader {
 						$original_wp_attachments[$field_id][$key] = $upload_result[$field_id][$key];
 						
 						//Delete the wp attachment for this video
-						wp_delete_attachment( $wp_attachment_id, TRUE );
+						$_save_video_file = FALSE;
+						if( isset($this->plugin_options_slug) ) {
+							$plugin_options = get_option( $this->plugin_options_slug );
+							if( isset($plugin_options['save_video_file_on_server']) ) {
+								$_save_video_file = (bool) $plugin_options['save_video_file_on_server'];
+							}
+						}
+						
+						if( $_save_video_file === FALSE ) {
+							wp_delete_attachment( $wp_attachment_id, TRUE );
+						}
+						
 						
 					}
 					

@@ -1815,10 +1815,11 @@ class PrsoGformsAdvUploaderInit {
 		
 		$key = self::$encrypt_key;
 		
-		if( isset($file_name, $key) ) {
-			return trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $file_name, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
+		if( isset($file_name, $key) && function_exists('mcrypt_encrypt') ) {
+			$file_name = trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $file_name, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
 		}
 		
+		return $file_name;
 	}
 	
 	/**
@@ -1833,10 +1834,11 @@ class PrsoGformsAdvUploaderInit {
 		
 		$key = self::$encrypt_key;
 		
-		if( isset($file_name, $key) ) {
-			return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key, base64_decode($file_name), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
+		if( isset($file_name, $key) && function_exists('mcrypt_decrypt') ) {
+			$file_name = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key, base64_decode($file_name), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
 		}
 		
+		return $file_name;
 	}
 	
 	/**

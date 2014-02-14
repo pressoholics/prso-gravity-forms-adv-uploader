@@ -447,6 +447,15 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 						"default" 		=> 0,
 					),
 					
+					//Save original video file on server
+					array(
+						'id'			=>'save_video_file_on_server',
+						'type' 			=> 'switch', 
+						'title' 		=> __('Save Original Video Files', $this->text_domain),
+						'subtitle'		=> __('If ON, original video files will be saved in media library after api upload', $this->text_domain),
+						"default" 		=> 0,
+					),
+					
 					//Confirmation email
 					array(
 						'id'		=>'confirmation_email',

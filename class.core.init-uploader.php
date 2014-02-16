@@ -741,6 +741,12 @@ class PrsoGformsAdvUploaderInit {
 				
 			}
 			
+			//Cache Rename uploaded files option
+			$args['rename_file_status'] = true;
+			if( isset($this->plugin_options['rename_file_status']) ) {
+				$args['rename_file_status'] 	= (bool) $this->plugin_options['rename_file_status'];
+			}
+			
 			//Cache duplicates_status option
 			$args['duplicates_status'] = true;
 			if( isset($this->plugin_options['duplicates_status']) ) {
@@ -828,6 +834,9 @@ class PrsoGformsAdvUploaderInit {
 					
 					//Cache max unmber of file allowed
 					$local_vars[$field_id]['max_files'] 			= $uploader_args['max_files'];
+					
+					//Cache if filenames should be unique
+					$local_vars[$field_id]['rename_file_status'] 			= $uploader_args['rename_file_status'];
 					
 					//Auto upload when files added
 					$local_vars[$field_id]['auto_upload'] 			= $uploader_args['auto_upload'];
@@ -957,6 +966,9 @@ class PrsoGformsAdvUploaderInit {
 			$uploader->enable_chunked = $validation_args['enable_chunked'];
 		}
 		
+		//Cache file rename status
+		$uploader->rename_files = $validation_args['rename_files'];
+		
 		//Cache array of mime types to reject
 		$uploader->allowed_mimes = $this->allowed_mimes;
 		
@@ -1045,6 +1057,14 @@ class PrsoGformsAdvUploaderInit {
 				
 			}
 			
+			//Cache any options from the plugin settings
+			
+			//Rename uploaded files
+			$validation_args['rename_files'] = true;
+			if( isset($this->plugin_options['rename_file_status']) ) {
+				$validation_args['rename_files'] = (bool) $this->plugin_options['rename_file_status'];
+			}
+			
 		}
 		
 		//Allow devs to hook before we get the form's validation settings
@@ -1073,6 +1093,7 @@ class PrsoGformsAdvUploaderInit {
 		$is_pluploader 			= FALSE;
 		$pluploader_field_data	= array();
 		$wp_attachment_data		= array();
+		$attachment_parent_ID	= NULL;
 		
 		//First check that this form is using plupload to upload files
 		if( isset($form['fields']) && !empty($form['fields']) ) {
@@ -1101,8 +1122,13 @@ class PrsoGformsAdvUploaderInit {
 					}
 				}
 				
+				//Detect if a Post has been created by this form entry
+				if( isset($entry['post_id']) ) {
+					$attachment_parent_ID = (int) $entry['post_id'];
+				}
+				
 				//If there is some field data to process let's process it!
-				$wp_attachment_data = $this->process_uploads( $pluploader_field_data, $entry );
+				$wp_attachment_data = $this->process_uploads( $pluploader_field_data, $entry, $attachment_parent_ID );
 				
 				//Action hook for successfully completed uploads
 				do_action( 'prso_gform_pluploader_processed_uploads', $wp_attachment_data, $entry, $form );
@@ -1125,7 +1151,7 @@ class PrsoGformsAdvUploaderInit {
 	* @access 	private
 	* @author	Ben Moody
 	*/
-	private function process_uploads( $pluploader_field_data = array(), $entry = array() ) {
+	private function process_uploads( $pluploader_field_data = array(), $entry = array(), $attachment_parent_ID = NULL ) {
 		
 		//Init vars
 		$pluploader_wp_attachment_data = array(); //Cache the attachement post id's of each uploaded file for each field 
@@ -1148,7 +1174,7 @@ class PrsoGformsAdvUploaderInit {
 						$file_base_name = $this->name_decrypt( esc_attr($uploaded_file) );
 						
 						//Call function to add this file to wp media library and cache it's post id 
-						if( $attach_id = $this->insert_attachment( $upload_id, $file_base_name, $entry ) ) {
+						if( $attach_id = $this->insert_attachment( $upload_id, $file_base_name, $entry, $attachment_parent_ID ) ) {
 							$pluploader_wp_attachment_data[$field_id][] = $attach_id;
 						}
 						
@@ -1186,7 +1212,7 @@ class PrsoGformsAdvUploaderInit {
 	* @returns	int		$attach_id - WP attachment post id for file
 	* @author	Ben Moody
 	*/
-	private function insert_attachment( $upload_id = NULL, $file_base_name = NULL, $entry = array() ) {
+	private function insert_attachment( $upload_id = NULL, $file_base_name = NULL, $entry = array(), $attachment_parent_ID = NULL ) {
 		
 		//Init vars
 		$pluploader_tmp_dir		= NULL;
@@ -1231,9 +1257,21 @@ class PrsoGformsAdvUploaderInit {
 				
 				//Error check
 				if( !empty($wp_filetype) && is_array($wp_filetype) ) {
-				
-					//Create a unique and descriptive post title - associate with form and entry
-					$post_title = 'Form ' . esc_attr($entry['form_id']) . ' Entry ' . esc_attr($entry['id']) . ' Fileupload ' . ($upload_id + 1);
+					
+					//Has file renaming been enabled
+					$_file_rename_status = TRUE;
+					if( isset($this->plugin_options['rename_file_status']) ) {
+						$_file_rename_status = (bool) $this->plugin_options['rename_file_status'];
+					}
+					
+					//Set file attachment title
+					if( $_file_rename_status ) {
+						//Create a unique and descriptive post title - associate with form and entry
+						$post_title = 'Form ' . esc_attr($entry['form_id']) . ' Entry ' . esc_attr($entry['id']) . ' Fileupload ' . ($upload_id + 1);
+					} else {
+						$post_title = esc_attr($file_base_name);
+					}
+					
 					
 					//Create the attachment array required for wp_insert_attachment()
 					$attachment = array(
@@ -1241,7 +1279,8 @@ class PrsoGformsAdvUploaderInit {
 						'post_mime_type'	=>	$wp_filetype['type'],
 						'post_title'		=>	$post_title,
 						'post_content'		=>	'',
-						'post_status'		=> 'inherit'
+						'post_status'		=> 'inherit',
+						'post_parent'		=> $attachment_parent_ID
 					);
 					
 					//Insert attachment

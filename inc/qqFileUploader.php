@@ -22,6 +22,7 @@ class qqFileUploader {
     public $cleanupTargetDir	= TRUE;
     public $maxFileAge			= NULL;
     public $allowed_mimes		= array();
+    public $rename_files		= TRUE;
 
     public $chunksCleanupProbability = 0.001; // Once in 1000 requests on avg
     public $chunksExpireIn = 604800; // One week
@@ -509,21 +510,21 @@ class qqFileUploader {
         $suffix = 0;
         
         //Create a new random name for file - security reasons
-        if( isset($filename) ) {
+        if( isset($filename) && $this->rename_files ) {
+        
 	        $unique = md5( $filename );
-        }
-        
-        // Get unique file name for the file, by appending random suffix.
-        
-        while (file_exists($uploadDirectory . DIRECTORY_SEPARATOR . $unique . $ext)){
-            $suffix += rand(1, 999);
+	        
+        } elseif($filename && !$this->rename_files) {
+	        
+	        $suffix += rand(1, 999);
             $unique = $unique.'-'.$suffix;
+	        
         }
         
         $result['file_name'] = $unique . $ext;
         
         $result['file_path'] =  $uploadDirectory . DIRECTORY_SEPARATOR . $unique . $ext;
-
+		
         // Create an empty target file
         if (!touch($result['file_path'])){
             // Failed

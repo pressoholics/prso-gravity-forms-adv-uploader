@@ -109,6 +109,20 @@ class PrsoGformsAdvUploader {
 		
 	}
 	
+	/**
+	* adv_post_attachments_shortcode
+	* 
+	* Shortcode 'get_adv_uploads'
+	*
+	* Builds a simple html ul list of all files attached to the post being displayed
+	*
+	* Filters: 
+	*	'prso_gform_pluploader_shortcode_attach_title' - filter individual attachment title
+	*	'prso_gform_pluploader_shortcode'	- Filter shortcode output
+	*
+	* @access 	public
+	* @author	Ben Moody
+	*/
 	public function adv_post_attachments_shortcode( $attr ) {
 		
 		//Init vars
@@ -151,7 +165,7 @@ class PrsoGformsAdvUploader {
 			$output.= '</ul>';
 		}
 		
-		return apply_filters( 'prso_gform_pluploader_shortcode_attach_title', $output, $attachments );
+		return apply_filters( 'prso_gform_pluploader_shortcode', $output, $attachments );
 	}
 	
 }

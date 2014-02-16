@@ -22,6 +22,7 @@ Chunked Multiple file uploads, Auto upload of videos to YouTube & Brightcove, Fi
 * Added security and validation
 * Bonus Terms of Service Gravity Forms field with optional submit disable feature
 * Creating posts with gavity forms? All uploads are added as post attachments and can be displayed with the [get_adv_uploads] shortcode
+* Also use the wordpress gallery shortcode to display any images attached to a post
 
 This is the Gravity Forms uploader plugin for those who need a little more than the default multi file upload of Gravity Forms v1.8. 
 

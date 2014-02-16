@@ -74,6 +74,9 @@ class PrsoGformsAdvUploader {
 			
 		}
 		
+		//Add shortcodes
+		add_shortcode('get_adv_uploads', array($this, 'adv_post_attachments_shortcode'));
+		
 	}
 		
 	/**
@@ -104,6 +107,51 @@ class PrsoGformsAdvUploader {
 			require_once( $framework_config );
 		}
 		
+	}
+	
+	public function adv_post_attachments_shortcode( $attr ) {
+		
+		//Init vars
+		global $post;
+		$attachments = NULL;
+		$output = NULL;
+		
+		extract(shortcode_atts(array(
+			'order'      	=> 'ASC',
+			'orderby'    	=> 'menu_order ID',
+			'id'         	=> $post ? $post->ID : 0,
+			'exclude'    	=> '',
+			'target'		=> '_blank'
+		), $attr, 'get_adv_uploads'));
+		
+		$attachments = get_children( 
+			array(
+				'post_parent' 		=> $id, 
+				'exclude' 			=> $exclude, 
+				'post_status' 		=> 'inherit', 
+				'post_type' 		=> 'attachment',
+				'order' 			=> $order, 
+				'orderby' 			=> $orderby
+			) 
+		);
+		
+		//Loop attachments and build html list
+		if( !empty($attachments) ) {
+			$output = '<ul class="gforms-adv-uploader-attachments">';
+			foreach( $attachments as $attachment_id => $Attachment ) {
+				
+				$attachment_title = apply_filters( 'prso_gform_pluploader_shortcode_attach_title', $Attachment->post_title . ' ('. $Attachment->post_mime_type .')', $Attachment );
+				
+				$output.= '<li>';
+					$output.= '<a href="'. $Attachment->guid .'" target="'. $target .'">';
+						$output.= $attachment_title;
+					$output.= '</a>';
+				$output.= '</li>';
+			}
+			$output.= '</ul>';
+		}
+		
+		return apply_filters( 'prso_gform_pluploader_shortcode_attach_title', $output, $attachments );
 	}
 	
 }

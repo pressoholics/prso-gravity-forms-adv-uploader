@@ -26,7 +26,7 @@
 				
 				chunk_size: PrsoPluploadVars.chunking,
 				
-				unique_names : true,
+				unique_names : PrsoPluploadVars.rename_file_status,
 				
 				prevent_duplicates : PrsoPluploadVars.duplicates_status,
 				

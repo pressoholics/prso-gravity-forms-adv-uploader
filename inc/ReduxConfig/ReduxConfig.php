@@ -261,7 +261,7 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 				'desc' => __('', $this->text_domain),
 				'icon' => 'el-icon-cogs',
 			    // 'submenu' => false, // Setting submenu to false on a given section will hide it from the WordPress sidebar menu!
-				'fields' => array(	
+				'fields' => array(
 					
 					//Auto Upload
 					array(
@@ -564,6 +564,29 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 				)
 			);
 
+			$this->sections[] = array(
+				'type' => 'divide',
+			);
+			
+			$this->sections[] = array(
+				'title' => __('Security Settings', $this->text_domain),
+				'desc' => __('File upload security options', $this->text_domain),
+				'icon' => 'el-icon-cogs',
+			    //'submenu' => false, // Setting submenu to false on a given section will hide it from the WordPress sidebar menu!
+				'fields' => array(	
+					
+					//Rename files on upload
+					array(
+						'id'			=>'rename_file_status',
+						'type' 			=> 'switch', 
+						'title' 		=> __('Rename uploaded files', $this->text_domain),
+						'subtitle'		=> __('Files are given a random unique name on upload', $this->text_domain),
+						'desc' 			=> __('Disabling this will make it easier for potential hackers to execute malicious files in the unlikely event they pass server file validation. <br><strong>Use at own risk</strong>', $this->text_domain),
+						"default" 		=> 1,
+					),
+					
+				)
+			);
 
 			$this->sections[] = array(
 				'type' => 'divide',
@@ -600,7 +623,7 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 	            // TYPICAL -> Change these values as you need/desire
 				'opt_name'          	=> $this->options_name, // This is where your data is stored in the database and also becomes your global variable name.
 				'display_name'			=> __( 'Gravity Forms Advanced Uploader', $this->text_domain ), // Name that appears at the top of your panel
-				'display_version'		=> '1.0', // Version that appears at the top of your panel
+				'display_version'		=> PRSOGFORMSADVUPLOADER__VERSION, // Version that appears at the top of your panel
 				'menu_type'          	=> 'menu', //Specify if the admin menu should appear or not. Options: menu or submenu (Under appearance only)
 				'allow_sub_menu'     	=> true, // Show the sections below the admin menu item or not
 				'menu_title'			=> __( 'Gravity Adv Uploader', $this->text_domain ),

@@ -683,6 +683,8 @@ class PrsoAdvVideoUploader {
 			
 		}
 		
+		die();
+		
 	}
 	
 	/**

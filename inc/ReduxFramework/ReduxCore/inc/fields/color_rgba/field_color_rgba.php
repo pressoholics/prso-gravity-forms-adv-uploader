@@ -72,9 +72,9 @@ if( !class_exists( 'ReduxFramework_color_rgba' ) ) {
 			);
 			$this->value = wp_parse_args( $this->value, $defaults );
 
-			echo '<input data-id="'.$this->field['id'].'" name="' . $this->parent->args['opt_name'] . '[' . $this->field['id'] . '][color]" id="' . $this->field['id'] . '-color" class="redux-color_rgba redux-color_rgba-init ' . $this->field['class'] . '"  type="text" value="' . $this->value['color'] . '"  data-default-color="' . $this->field['default']['color'] . '" data-defaultvalue="' . $this->field['default']['color'] . '" data-opacity="' . $this->value['alpha'] .'" />';
+			echo '<input data-id="'.$this->field['id'].'" name="' . $this->field['name'] . '[color]' . $this->field['name_suffix'] . '" id="' . $this->field['id'] . '-color" class="redux-color_rgba redux-color_rgba-init ' . $this->field['class'] . '"  type="text" value="' . $this->value['color'] . '"  data-default-color="' . $this->field['default']['color'] . '" data-defaultvalue="' . $this->field['default']['color'] . '" data-opacity="' . $this->value['alpha'] .'" />';
 			
-			echo '<input data-id="'.$this->field['id'] . '-alpha" name="' . $this->parent->args['opt_name'] . '[' . $this->field['id'] . '][alpha]" id="' . $this->field['id'] . '-alpha" type="hidden" value="'.$this->value['alpha'].'" />';
+			echo '<input data-id="'.$this->field['id'] . '-alpha" name="' . $this->field['name'] . '[alpha]' . $this->field['name_suffix'] . '" id="' . $this->field['id'] . '-alpha" type="hidden" value="'.$this->value['alpha'].'" />';
 			
 			if ( !isset( $this->field['transparent'] ) || $this->field['transparent'] !== false ) {
 				$tChecked = "";
@@ -85,11 +85,10 @@ if( !class_exists( 'ReduxFramework_color_rgba' ) ) {
 			}
 
 		}
-	
 
 		public function output() {
 
-			if ( ( !isset( $this->field['output'] ) || !is_array( $this->field['output'] ) ) && ( !isset( $this->field['compiler'] ) || !is_array( $this->field['compiler'] ) ) ) {
+			if ( ( !isset( $this->field['output'] ) || !is_array( $this->field['output'] ) ) && ( !isset( $this->field['compiler'] )  ) ) {
 				return;
 			}
 
@@ -97,7 +96,7 @@ if( !class_exists( 'ReduxFramework_color_rgba' ) ) {
 	        if ( !empty( $this->value ) ) {
 	        	$mode = ( isset( $this->field['mode'] ) && !empty( $this->field['mode'] ) ? $this->field['mode'] : 'color' );
 
-	        	$style .= $mode.':'.$this->value.';';
+	        	$style .= $mode.':'.Redux_Helpers::hex2rgba($this->value['color'], $this->value['alpha']).';';
 
 				if ( !empty( $this->field['output'] ) && is_array( $this->field['output'] ) ) {
 					$keys = implode(",", $this->field['output']);

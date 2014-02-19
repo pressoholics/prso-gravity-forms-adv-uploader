@@ -83,19 +83,19 @@ if( !class_exists( 'ReduxFramework_link_color' ) ) {
         public function render() {
 
             if ( $this->field['regular'] === true && $this->field['default']['regular'] !== false ):
-                echo '<strong>' . __( 'Regular', 'redux-framework' ) . '</strong>&nbsp;<input id="' . $this->field['id'] . '-regular" name="' . $this->parent->args['opt_name'] . '[' . $this->field['id'] . '][regular]" value="'.$this->value['regular'].'" class="redux-color redux-color-init ' . $this->field['class'] . '"  type="text" data-default-color="' . $this->field['default']['regular'] . '" />&nbsp;&nbsp;&nbsp;&nbsp;';
+                echo '<strong>' . __( 'Regular', 'redux-framework' ) . '</strong>&nbsp;<input id="' . $this->field['id'] . '-regular" name="' . $this->field['name'] . '[regular]' . $this->field['name_suffix'] . '" value="'.$this->value['regular'].'" class="redux-color redux-color-init ' . $this->field['class'] . '"  type="text" data-default-color="' . $this->field['default']['regular'] . '" />&nbsp;&nbsp;&nbsp;&nbsp;';
             endif;
 
             if ( $this->field['hover'] === true && $this->field['default']['hover'] !== false ):
-                echo '<strong>' . __( 'Hover', 'redux-framework' ) . '</strong>&nbsp;<input id="' . $this->field['id'] . '-hover" name="' . $this->parent->args['opt_name'] . '[' . $this->field['id'] . '][hover]" value="' . $this->value['hover'] . '" class="redux-color redux-color-init ' . $this->field['class'] . '"  type="text" data-default-color="' . $this->field['default']['hover'] . '" />&nbsp;&nbsp;&nbsp;&nbsp;';
+                echo '<strong>' . __( 'Hover', 'redux-framework' ) . '</strong>&nbsp;<input id="' . $this->field['id'] . '-hover" name="' . $this->field['name'] . '[hover]' . $this->field['name_suffix'] . '" value="' . $this->value['hover'] . '" class="redux-color redux-color-init ' . $this->field['class'] . '"  type="text" data-default-color="' . $this->field['default']['hover'] . '" />&nbsp;&nbsp;&nbsp;&nbsp;';
             endif;
 
             if ( $this->field['visited'] === true && $this->field['default']['visited'] !== false ):
-                echo '<strong>' . __( 'Visited', 'redux-framework' ) . '</strong>&nbsp;<input id="' . $this->field['id'] . '-hover" name="' . $this->parent->args['opt_name'] . '[' . $this->field['id'] . '][visited]" value="' . $this->value['visited'] . '" class="redux-color redux-color-init ' . $this->field['class'] . '"  type="text" data-default-color="' . $this->field['default']['visited'] . '" />&nbsp;&nbsp;&nbsp;&nbsp;';
+                echo '<strong>' . __( 'Visited', 'redux-framework' ) . '</strong>&nbsp;<input id="' . $this->field['id'] . '-hover" name="' . $this->field['name'] . '[visited]' . $this->field['name_suffix'] . '" value="' . $this->value['visited'] . '" class="redux-color redux-color-init ' . $this->field['class'] . '"  type="text" data-default-color="' . $this->field['default']['visited'] . '" />&nbsp;&nbsp;&nbsp;&nbsp;';
             endif;            
 
             if ( $this->field['active'] === true && $this->field['default']['active'] !== false ):
-                echo '<strong>' . __( 'Active', 'redux-framework' ) . '</strong>&nbsp;<input id="' . $this->field['id'] . '-active" name="' . $this->parent->args['opt_name'] . '[' . $this->field['id'] . '][active]" value="' . $this->value['active'] . '" class="redux-color redux-color-init ' . $this->field['class'] . '"  type="text" data-default-color="' . $this->field['default']['active'] . '" />';
+                echo '<strong>' . __( 'Active', 'redux-framework' ) . '</strong>&nbsp;<input id="' . $this->field['id'] . '-active" name="' . $this->field['name'] . '[active]' . $this->field['name_suffix'] . '" value="' . $this->value['active'] . '" class="redux-color redux-color-init ' . $this->field['class'] . '"  type="text" data-default-color="' . $this->field['default']['active'] . '" />';
             endif;
         
         }
@@ -113,7 +113,7 @@ if( !class_exists( 'ReduxFramework_link_color' ) ) {
         
             wp_enqueue_script(
                 'redux-field-color-js', 
-                ReduxFramework::$_url . 'inc/fields/color/field_color.min.js', 
+                ReduxFramework::$_url . 'inc/fields/color/field_color.js', 
                 array( 'jquery', 'wp-color-picker' ),
                 time(),
                 true
@@ -129,10 +129,6 @@ if( !class_exists( 'ReduxFramework_link_color' ) ) {
         }
 
         public function output() {
-
-            if ( ( !isset( $this->field['output'] ) || !is_array( $this->field['output'] ) ) && ( !isset( $this->field['compiler'] ) || !is_array( $this->field['compiler'] ) ) ) {
-                return;
-            }
 
             $style = array();
 
@@ -155,7 +151,11 @@ if( !class_exists( 'ReduxFramework_link_color' ) ) {
                         if (is_numeric($key)) {
                             $styleString .= implode(",", $this->field['output']) . "{" . $value . '}';
                         } else {
-                            $styleString .= implode(":".$key.",", $this->field['output']) . "{" . $value . '}';
+                            if (count($key) == 1) {
+                                $styleString .= $this->field['output'][0].":".$key . "{" . $value . '}';
+                            } else {
+                                $styleString .= implode(":".$key.",", $this->field['output']) . "{" . $value . '}';    
+                            }                            
                         }
                     }
                     $this->parent->outputCSS .= $styleString;  
@@ -166,7 +166,11 @@ if( !class_exists( 'ReduxFramework_link_color' ) ) {
                         if (is_numeric($key)) {
                             $styleString .= implode(",", $this->field['compiler']) . "{" . $value . '}';
                         } else {
-                            $styleString .= implode(":".$key.",", $this->field['compiler']) . "{" . $value . '}';
+                            if (count($key) == 1) {
+                                $styleString .= $this->field['compiler'][0].":".$key . "{" . $value . '}';
+                            } else {
+                                $styleString .= implode(":".$key.",", $this->field['compiler']) . "{" . $value . '}';    
+                            }
                         }
                     }
                     $this->parent->compilerCSS .= $styleString;  

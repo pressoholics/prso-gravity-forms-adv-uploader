@@ -449,7 +449,8 @@ class PrsoAdvVideoUploader {
 		$video_mimes = array(
 			'video/quicktime', 'video/x-quicktime',
 			'video/mp4', 'video/avi', 'video/msvideo', 'video/x-msvideo',
-			'video/x-m4v', 'video/x-flv', 'video/3gpp', 'video/webm'
+			'video/x-m4v', 'video/x-flv', 'video/3gpp', 'video/webm',
+			'video/x-ms-wmv', 'video/mpeg'
 		);
 		
 		if( !empty($wp_attachment_file_info) && is_array($wp_attachment_file_info) ) {

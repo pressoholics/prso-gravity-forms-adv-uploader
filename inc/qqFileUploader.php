@@ -95,7 +95,6 @@ class qqFileUploader {
 	        
         }
         
-        
         //First check to see if requested uploads dir exists, if not make it
         if( !file_exists($uploadDirectory) ) {
 	        mkdir($uploadDirectory);
@@ -514,16 +513,32 @@ class qqFileUploader {
         
 	        $unique = md5( $filename );
 	        
+			$result['file_path'] =  $uploadDirectory . DIRECTORY_SEPARATOR . $unique . $ext;
+	        
         } elseif($filename && !$this->rename_files) {
 	        
-	        $suffix += rand(1, 999);
-            $unique = $unique.'-'.$suffix;
+	        //Cache destination full file path
+	        $_file_path = $uploadDirectory . DIRECTORY_SEPARATOR . $unique . $ext;
+	        
+	        //Check if there is a file with the same name in tmp folder
+	        if( !file_exists($_file_path) ) {
+		        
+		        $result['file_path'] =  $uploadDirectory . DIRECTORY_SEPARATOR . $unique . $ext;
+		        
+	        } else {
+		        
+		        //Put file in unique dir
+				$suffix += rand(1, 999);
+				$unique = $unique . '_' . $suffix;
+		        
+		        $result['file_path'] =  $uploadDirectory . DIRECTORY_SEPARATOR . $unique . $ext;
+		        
+	        }
 	        
         }
         
-        $result['file_name'] = $unique . $ext;
-        
-        $result['file_path'] =  $uploadDirectory . DIRECTORY_SEPARATOR . $unique . $ext;
+        //Cache filename
+	    $result['file_name'] = $unique . $ext;
 		
         // Create an empty target file
         if (!touch($result['file_path'])){

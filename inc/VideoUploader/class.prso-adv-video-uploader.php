@@ -450,7 +450,8 @@ class PrsoAdvVideoUploader {
 			'video/quicktime', 'video/x-quicktime',
 			'video/mp4', 'video/avi', 'video/msvideo', 'video/x-msvideo',
 			'video/x-m4v', 'video/x-flv', 'video/3gpp', 'video/webm',
-			'video/x-ms-wmv', 'video/mpeg'
+			'video/x-ms-wmv', 'video/mpeg', 'video/x-ms-wmx', 'video/x-ms-wm', 'video/x-ms-asf',
+			'video/divx', 'video/ogg', 'video/x-matroska'
 		);
 		
 		if( !empty($wp_attachment_file_info) && is_array($wp_attachment_file_info) ) {
@@ -463,6 +464,9 @@ class PrsoAdvVideoUploader {
 					if( isset($attachment_data['mime_type']) && !empty($attachment_data['mime_type']) ) {
 					
 						if( !in_array($attachment_data['mime_type'], $video_mimes) ) {
+						
+							//$this->plugin_error_log( 'Video Uploader: Not Video Mime - ' . $video_mimes );
+							
 							//Unset this attachment from array
 							unset( $wp_attachment_file_info[$field_id][$key] );
 						} else {

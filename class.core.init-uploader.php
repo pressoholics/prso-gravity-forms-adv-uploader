@@ -343,10 +343,16 @@ class PrsoGformsAdvUploaderInit {
 	*/
 	public function add_actions() {
 		
+		//Init vars
+		$allowed_mime_types = array(
+			'3gp'	=>	'video/3gpp',
+			'wmvv'	=>	'video/x-msvideo'	
+		);
+		
+		$allowed_mime_types = wp_parse_args( get_allowed_mime_types(), $allowed_mime_types );
+		
 		//Cache array of mime types to reject out of hand
- 		$this->allowed_mimes = apply_filters( 'prso_adv_uploader_reject_mimes', 
- 			get_allowed_mime_types()
- 		);
+ 		$this->allowed_mimes = apply_filters( 'prso_adv_uploader_reject_mimes', $allowed_mime_types );
 		
 		//Execute javascript required to add custom field settings menu
 		add_action( "gform_editor_js", array($this, 'pluploader_editor_js') );

@@ -130,205 +130,207 @@ class PrsoGformsAdvUploaderInit {
 		$plupload_i18n_script		= NULL;
 		$plupload_i18n_script_path	= NULL;
 		
-		//Register Plupload scripts
-		
-		
-		//Plupload Full Min
-		if( !$debug_mode ) {
-		
-			wp_register_script( 'plupload-full-min', 
-				plugins_url( '/inc/js/plupload/plupload.full.min.js', __FILE__), 
-				array('jquery'), 
-				'2.1.1', 
-				$in_footer 
-			);
+		//Register Plupload scripts -- NOT FOR ADMIN AREA!!
+		if( !is_admin() ) {
 			
-		} else {
+			//Plupload Full Min
+			if( !$debug_mode ) {
 			
-			wp_register_script( 'plupload-moxie', 
-				plugins_url( '/inc/js/plupload/moxie.js', __FILE__), 
-				array('jquery'), 
-				'2.1.1', 
-				$in_footer 
-			);
-		
-			wp_register_script( 'plupload-full-min', 
-				plugins_url( '/inc/js/plupload/plupload.dev.js', __FILE__), 
-				array('plupload-moxie'), 
-				'2.1.1', 
-				$in_footer 
-			);
-			
-		}
-		//Enqueue scripts for Plupload
-		wp_enqueue_script('plupload-full-min');
-		
-		//Detect User Interface
-		switch( $this->user_interface ) {
-			case 'jquery-ui':
-			
-				//JQuery UI Min
-				wp_register_script( 'plupload-jquery-ui-core', 
-					'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js', 
+				wp_register_script( 'plupload-full-min', 
+					plugins_url( '/inc/js/plupload/plupload.full.min.js', __FILE__), 
 					array('jquery'), 
-					'1.10.2', 
-					$in_footer 
-				);
-		
-				//Plupload JQuery UI
-				wp_register_script( 'plupload-jquery-ui', 
-					plugins_url( '/inc/js/plupload/jquery.ui.plupload/jquery.ui.plupload.js', __FILE__), 
-					array('plupload-full-min'), 
 					'2.1.1', 
 					$in_footer 
 				);
 				
-				//Register plupload init script
-				wp_register_script( 'prso-pluploader-init', 
-					plugins_url(  '/inc/js/init_plupload_jquery_ui.js', __FILE__), 
-					array('plupload-full-min'), 
-					'1.0', 
+			} else {
+				
+				wp_register_script( 'plupload-moxie', 
+					plugins_url( '/inc/js/plupload/moxie.js', __FILE__), 
+					array('jquery'), 
+					'2.1.1', 
+					$in_footer 
+				);
+			
+				wp_register_script( 'plupload-full-min', 
+					plugins_url( '/inc/js/plupload/plupload.dev.js', __FILE__), 
+					array('plupload-moxie'), 
+					'2.1.1', 
 					$in_footer 
 				);
 				
-				//Register plupload Styles
-				wp_register_style( 'plupload-jquery-ui-core', 
-					'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/themes/smoothness/jquery-ui.min.css', 
-					NULL, 
-					'1.10.2', 
-					'screen' 
-				);
+			}
+			//Enqueue scripts for Plupload
+			wp_enqueue_script('plupload-full-min');
+			
+			//Detect User Interface
+			switch( $this->user_interface ) {
+				case 'jquery-ui':
 				
-				//Plupload JQuery UI Style
-				wp_register_style( 'plupload-jquery-ui', 
-					plugins_url(  '/inc/js/plupload/jquery.ui.plupload/css/jquery.ui.plupload.css', __FILE__), 
-					array('plupload-jquery-ui-core'), 
-					'2.1.1', 
-					'screen' 
-				);
-				
-				//Enqueue
-				if( !is_admin() ) {
-				
-					//Scripts
-			 		wp_enqueue_script('plupload-jquery-ui-core');
-					wp_enqueue_script('plupload-jquery-ui');
+					//JQuery UI Min
+					wp_register_script( 'plupload-jquery-ui-core', 
+						'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js', 
+						array('jquery'), 
+						'1.10.2', 
+						$in_footer 
+					);
+			
+					//Plupload JQuery UI
+					wp_register_script( 'plupload-jquery-ui', 
+						plugins_url( '/inc/js/plupload/jquery.ui.plupload/jquery.ui.plupload.js', __FILE__), 
+						array('plupload-full-min'), 
+						'2.1.1', 
+						$in_footer 
+					);
 					
-					//Styles
-					wp_enqueue_style('plupload-jquery-ui-core');
-					wp_enqueue_style('plupload-jquery-ui');
+					//Register plupload init script
+					wp_register_script( 'prso-pluploader-init', 
+						plugins_url(  '/inc/js/init_plupload_jquery_ui.js', __FILE__), 
+						array('plupload-full-min'), 
+						'1.0', 
+						$in_footer 
+					);
 					
-				}			
-				
-				
-				break;
-			case 'queue':	
-				
-				//Plupload Queue Script
-				wp_register_script( 'plupload-jquery-queue', 
-					plugins_url(  '/inc/js/plupload/jquery.plupload.queue/jquery.plupload.queue.min.js', __FILE__), 
-					array('plupload-full-min'), 
-					'2.1.1', 
-					$in_footer 
-				);
-				
-				//Register plupload init script
-				wp_register_script( 'prso-pluploader-init', 
-					plugins_url(  '/inc/js/init_plupload_queue.js', __FILE__), 
-					array('plupload-full-min'), 
-					'1.0', 
-					$in_footer 
-				);
-				
-				//Plupload Queue Style
-				wp_register_style( 'plupload-queue', 
-					plugins_url(  '/inc/js/plupload/jquery.plupload.queue/css/jquery.plupload.queue.css', __FILE__), 
-					array(), 
-					'2.1.1', 
-					'screen' 
-				);
-				
-				//Enqueue
-				if( !is_admin() ) {
-				
-					//Scripts
-			 		wp_enqueue_script('plupload-jquery-queue');
+					//Register plupload Styles
+					wp_register_style( 'plupload-jquery-ui-core', 
+						'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/themes/smoothness/jquery-ui.min.css', 
+						NULL, 
+						'1.10.2', 
+						'screen' 
+					);
 					
-					//Styles
-					wp_enqueue_style('plupload-queue');
+					//Plupload JQuery UI Style
+					wp_register_style( 'plupload-jquery-ui', 
+						plugins_url(  '/inc/js/plupload/jquery.ui.plupload/css/jquery.ui.plupload.css', __FILE__), 
+						array('plupload-jquery-ui-core'), 
+						'2.1.1', 
+						'screen' 
+					);
+					
+					//Enqueue
+					if( !is_admin() ) {
+					
+						//Scripts
+				 		wp_enqueue_script('plupload-jquery-ui-core');
+						wp_enqueue_script('plupload-jquery-ui');
+						
+						//Styles
+						wp_enqueue_style('plupload-jquery-ui-core');
+						wp_enqueue_style('plupload-jquery-ui');
+						
+					}			
+					
+					
+					break;
+				case 'queue':	
+					
+					//Plupload Queue Script
+					wp_register_script( 'plupload-jquery-queue', 
+						plugins_url(  '/inc/js/plupload/jquery.plupload.queue/jquery.plupload.queue.min.js', __FILE__), 
+						array('plupload-full-min'), 
+						'2.1.1', 
+						$in_footer 
+					);
+					
+					//Register plupload init script
+					wp_register_script( 'prso-pluploader-init', 
+						plugins_url(  '/inc/js/init_plupload_queue.js', __FILE__), 
+						array('plupload-full-min'), 
+						'1.0', 
+						$in_footer 
+					);
+					
+					//Plupload Queue Style
+					wp_register_style( 'plupload-queue', 
+						plugins_url(  '/inc/js/plupload/jquery.plupload.queue/css/jquery.plupload.queue.css', __FILE__), 
+						array(), 
+						'2.1.1', 
+						'screen' 
+					);
+					
+					//Enqueue
+					if( !is_admin() ) {
+					
+						//Scripts
+				 		wp_enqueue_script('plupload-jquery-queue');
+						
+						//Styles
+						wp_enqueue_style('plupload-queue');
+						
+					}
+					
+					break;
+				default:
+					
+					//Register plupload init script
+					wp_register_script( 'prso-pluploader-init', 
+						plugins_url(  '/inc/js/init_plupload_custom.js', __FILE__), 
+						array('plupload-full-min'), 
+						'1.0', 
+						$in_footer 
+					);
+					
+					break;
+			}
+			
+			
+			
+			//i18n Scripts
+			$plupload_i18n_script = apply_filters( 'prso_gform_pluploader_i18n_script', $plupload_i18n_script );
+			
+			//Register request plupload i18n script if found
+			if( isset($this->plugin_path, $plupload_i18n_script) ) {
+				
+				$plupload_i18n_script_path = $this->plugin_path . 'js/i18n/' . $plupload_i18n_script . '.js';
+				
+				if( file_exists($plupload_i18n_script_path)) {
+				
+					wp_register_script( "plupload-i18n", 
+						plugins_url("/inc/js/plupload/i18n/{$plupload_i18n_script}.js", __FILE__), 
+						array('plupload-full-min'), 
+						NULL, 
+						$in_footer 
+					);
+					
+					//i18n if requested
+					wp_enqueue_script('plupload-i18n');
 					
 				}
 				
-				break;
-			default:
-				
-				//Register plupload init script
-				wp_register_script( 'prso-pluploader-init', 
-					plugins_url(  '/inc/js/init_plupload_custom.js', __FILE__), 
-					array('plupload-full-min'), 
-					'1.0', 
-					$in_footer 
-				);
-				
-				break;
-		}
-		
-		
-		
-		//i18n Scripts
-		$plupload_i18n_script = apply_filters( 'prso_gform_pluploader_i18n_script', $plupload_i18n_script );
-		
-		//Register request plupload i18n script if found
-		if( isset($this->plugin_path, $plupload_i18n_script) ) {
-			
-			$plupload_i18n_script_path = $this->plugin_path . 'js/i18n/' . $plupload_i18n_script . '.js';
-			
-			if( file_exists($plupload_i18n_script_path)) {
-			
-				wp_register_script( "plupload-i18n", 
-					plugins_url("/inc/js/plupload/i18n/{$plupload_i18n_script}.js", __FILE__), 
-					array('plupload-full-min'), 
-					NULL, 
-					$in_footer 
-				);
-				
-				//i18n if requested
-				wp_enqueue_script('plupload-i18n');
-				
 			}
 			
-		}
-		
-		//Register custom scripts for use with gforms
-		wp_register_script( 'prso-pluploader-entries', 
-			plugins_url(  '/inc/js/gforms-entries.js', __FILE__), 
-			array('jquery'), 
-			'1.0', 
-			$in_footer 
-		);	
-		
-		//Plugin Gforms admin area style
-		wp_register_style( 'plupload-gform-form-display', plugins_url('/inc/css/form-display.css', __FILE__), array(), '1.0', 'screen' );
-		
-		//Enqueue script for gforms entry customization
-		if( is_admin() && isset($_GET['page']) && $_GET['page'] === 'gf_entries' ) {
-			wp_enqueue_script('prso-pluploader-entries');
-			//Call method to set js object for 'prso-pluploader-entries'
-			$this->localize_script_prso_pluploader_entries();
-		}
-		
-		//Enqueue script for gforms form display customization
-		if( is_admin() && isset($_GET['page']) && $_GET['page'] === 'gf_edit_forms' ) {
-			wp_enqueue_style('plupload-gform-form-display');
-		}
-		
-		//Enqueue plupload activate script
-		if( $activate_fine_uploader === TRUE ) {
-			//Enqueue plugin plupload init script
-			wp_enqueue_script('prso-pluploader-init');
+			//Register custom scripts for use with gforms
+			wp_register_script( 'prso-pluploader-entries', 
+				plugins_url(  '/inc/js/gforms-entries.js', __FILE__), 
+				array('jquery'), 
+				'1.0', 
+				$in_footer 
+			);	
 			
-			//Call helper to cache and localize vars requied for init
-			$this->localize_pluploader_init_vars();
+			//Plugin Gforms admin area style
+			wp_register_style( 'plupload-gform-form-display', plugins_url('/inc/css/form-display.css', __FILE__), array(), '1.0', 'screen' );
+			
+			//Enqueue script for gforms entry customization
+			if( is_admin() && isset($_GET['page']) && $_GET['page'] === 'gf_entries' ) {
+				wp_enqueue_script('prso-pluploader-entries');
+				//Call method to set js object for 'prso-pluploader-entries'
+				$this->localize_script_prso_pluploader_entries();
+			}
+			
+			//Enqueue script for gforms form display customization
+			if( is_admin() && isset($_GET['page']) && $_GET['page'] === 'gf_edit_forms' ) {
+				wp_enqueue_style('plupload-gform-form-display');
+			}
+			
+			//Enqueue plupload activate script
+			if( $activate_fine_uploader === TRUE ) {
+				//Enqueue plugin plupload init script
+				wp_enqueue_script('prso-pluploader-init');
+				
+				//Call helper to cache and localize vars requied for init
+				$this->localize_pluploader_init_vars();
+			}
+				
 		}
 		
 	}

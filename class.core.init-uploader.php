@@ -84,7 +84,6 @@ class PrsoGformsAdvUploaderInit {
 		
 		//Enqueue any custom scripts or styles
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		
 		//Add any custom actions
 		add_action( 'init', array( $this, 'add_actions' ) );
@@ -299,6 +298,19 @@ class PrsoGformsAdvUploaderInit {
 				
 			}
 			
+			//Enqueue plupload activate script
+			if( $activate_fine_uploader === TRUE ) {
+				//Enqueue plugin plupload init script
+				wp_enqueue_script('prso-pluploader-init');
+				
+				//Call helper to cache and localize vars requied for init
+				$this->localize_pluploader_init_vars();
+			}
+				
+		}
+		
+		if( is_admin() ) {
+			
 			//Register custom scripts for use with gforms
 			wp_register_script( 'prso-pluploader-entries', 
 				plugins_url(  '/inc/js/gforms-entries.js', __FILE__), 
@@ -322,15 +334,6 @@ class PrsoGformsAdvUploaderInit {
 				wp_enqueue_style('plupload-gform-form-display');
 			}
 			
-			//Enqueue plupload activate script
-			if( $activate_fine_uploader === TRUE ) {
-				//Enqueue plugin plupload init script
-				wp_enqueue_script('prso-pluploader-init');
-				
-				//Call helper to cache and localize vars requied for init
-				$this->localize_pluploader_init_vars();
-			}
-				
 		}
 		
 	}

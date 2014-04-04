@@ -198,6 +198,9 @@ class PrsoAdvVideoUploader {
 			//Set form array from gravity forms
 			$fields['form'] = urlencode( json_encode($form) );
 			
+			//Set nonce
+			$fields['nonce_key'] = $this->curl_create_nonce( 'adv-video-nonce' );
+			
 			//** Init curl request - note this is asynchronous **//
 			$this->init_curl( $fields );
 			
@@ -235,6 +238,56 @@ class PrsoAdvVideoUploader {
 	}
 	
 	/**
+	* curl_create_nonce
+	* 
+	* Create nonce. Use custom method due to fact that curl request will not be logged in
+	* and user id will not match when it comes to checking nonce
+	* 
+	* @param	Array	$post_fields
+	* @access 	public
+	* @author	Ben Moody
+	*/
+	protected function curl_create_nonce( $action ) {
+		
+		$uid = 1;
+		
+		//2 min life span for nonce
+		$i = $this->curl_nonce_tick();
+		
+		return substr(wp_hash($i . $action . $uid, 'nonce'), -12, 10);
+		
+	}
+	
+	/**
+	* curl_check_nonce
+	* 
+	* Check nonce. Use custom method due to fact that curl request will not be logged in
+	* and user id will not match when it comes to checking nonce
+	* 
+	* @param	Array	$post_fields
+	* @access 	public
+	* @author	Ben Moody
+	*/
+	protected function curl_check_nonce( $nonce, $action ) {
+		
+		$uid = 1;
+		
+		$i = $this->curl_nonce_tick();
+		
+		// Nonce generated 0-2 mins ago
+		if ( substr(wp_hash($i . $action . $uid, 'nonce'), -12, 10) === $nonce )
+		        return 1;
+		        
+		// Invalid nonce
+		return false;
+		
+	}
+	
+	function curl_nonce_tick() {	
+		return ceil(time() / ( 120 / 2 ));
+	}
+	
+	/**
 	* init_attachment_process
 	* 
 	* Called by WP Ajax Action: prso_gforms_youtube_upload_init
@@ -256,6 +309,10 @@ class PrsoAdvVideoUploader {
 		$wp_attachment_data = array();
 		$entry 				= array();
 		$form 				= array();
+		
+		if( !$this->curl_check_nonce($_POST['nonce_key'],'adv-video-nonce') ) {
+			die();
+		}
 		
 		//Try to increase php max execution time
 		ini_set( 'max_execution_time', 600 );

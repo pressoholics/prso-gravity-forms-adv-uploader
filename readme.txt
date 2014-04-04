@@ -5,7 +5,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: gravity forms, gravity forms file upload, gravity forms file uploader, gravity forms uploader, plupload, gravity forms videos, gravity forms youtube, youtube uploader, youtube file uploader
 Requires at least: 3.0
 Tested up to: 3.8
-Stable tag: 1.17
+Stable tag: 1.18
 
 Chunked Multiple file uploads, Auto upload of videos to YouTube & Brightcove, Files stored in WP Media Library, Advanced options.
 
@@ -60,6 +60,21 @@ NOTE: You will require PHP iconv extension installed on server for YouTube uploa
 
 More info over at GitHub (https://github.com/pressoholics/prso-gravity-forms-adv-uploader).
 
+= Change Plupload Language =
+
+Use 'prso_gform_pluploader_i18n_script' filter in themes functions.php to select language for Plupload:
+
+add_filter( 'prso_gform_pluploader_i18n_script', 'plupload_i18n' );
+function plupload_i18n( $i18n_filename ) {
+	
+	//Use fr,js file - remove .js from filename
+	$i18n_filename = 'fr';
+	
+	return i18n_filename;
+}
+
+See plugins/prso-gravity-forms-adv-uploader/inc/js/plupload/i18n folder for language file options.
+
 = Entries are not appearing in admin area =
 
 Gravity forms requires that each form has at least 1 gravity forms field to show results. So if you have just the uploader in your form try adding a text field or something similar. I will look into a work around in future updates.
@@ -107,6 +122,9 @@ This option can be hit and miss in some older browsers, that said it works in mo
 
 == Changelog ==
 
+= 1.18 =
+* Added 'prso_gform_pluploader_i18n_script' filter to change Plupload i18n language files. See FAQ.
+
 = 1.17 =
 * Fixed bug where Wordpress media library uploads would not functions with plugin active.
 
@@ -142,6 +160,9 @@ This option can be hit and miss in some older browsers, that said it works in mo
 * Inital commit to plugin repo
 
 == Upgrade Notice ==
+
+= 1.18 =
+* Added filter to change Plupload i18n language files. See FAQ.
 
 = 1.17 =
 * Fixed bug where Wordpress media library uploads would not functions with plugin active.

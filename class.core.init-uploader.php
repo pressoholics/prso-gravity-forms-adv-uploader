@@ -280,21 +280,17 @@ class PrsoGformsAdvUploaderInit {
 			//Register request plupload i18n script if found
 			if( isset($this->plugin_path, $plupload_i18n_script) ) {
 				
-				$plupload_i18n_script_path = $this->plugin_path . 'js/i18n/' . $plupload_i18n_script . '.js';
+				$plupload_i18n_script_path = $this->plugin_url . 'inc/js/plupload/i18n/' . $plupload_i18n_script . '.js';
+									
+				wp_register_script( "plupload-i18n", 
+					$plupload_i18n_script_path, 
+					array('plupload-full-min'), 
+					NULL, 
+					$in_footer 
+				);
 				
-				if( file_exists($plupload_i18n_script_path)) {
-				
-					wp_register_script( "plupload-i18n", 
-						plugins_url("/inc/js/plupload/i18n/{$plupload_i18n_script}.js", __FILE__), 
-						array('plupload-full-min'), 
-						NULL, 
-						$in_footer 
-					);
-					
-					//i18n if requested
-					wp_enqueue_script('plupload-i18n');
-					
-				}
+				//i18n if requested
+				wp_enqueue_script('plupload-i18n');
 				
 			}
 			

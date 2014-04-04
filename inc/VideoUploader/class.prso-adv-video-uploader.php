@@ -222,7 +222,7 @@ class PrsoAdvVideoUploader {
 		$ch = curl_init();
 		
 		//Cache path to wp ajax script
-		$wp_ajax_url = home_url() . '/wp-admin/admin-ajax.php';
+		$wp_ajax_url = admin_url('admin-ajax.php');
 		
 		curl_setopt($ch, CURLOPT_URL, $wp_ajax_url);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);

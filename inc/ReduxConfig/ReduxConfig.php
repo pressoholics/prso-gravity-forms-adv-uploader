@@ -456,6 +456,15 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 						"default" 		=> 0,
 					),
 					
+					//Mark video as private if api allows it
+					array(
+						'id'			=>'video_is_private',
+						'type' 			=> 'switch', 
+						'title' 		=> __('Mark video as private', $this->text_domain),
+						'subtitle'		=> __('If ON, video will be marked as private if service api allows.', $this->text_domain),
+						"default" 		=> 1,
+					),
+					
 					//Confirmation email
 					array(
 						'id'		=>'confirmation_email',

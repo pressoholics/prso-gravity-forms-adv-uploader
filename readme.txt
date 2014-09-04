@@ -5,7 +5,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: gravity forms, gravity forms file upload, gravity forms file uploader, gravity forms uploader, plupload, gravity forms videos, gravity forms youtube, youtube uploader, youtube file uploader
 Requires at least: 3.0
 Tested up to: 4.0
-Stable tag: 1.20
+Stable tag: 1.21
 
 Chunked Multiple file uploads, Auto upload of videos to YouTube & Brightcove, Files stored in WP Media Library, Advanced options.
 
@@ -122,6 +122,10 @@ This option can be hit and miss in some older browsers, that said it works in mo
 
 == Changelog ==
 
+= 1.21 =
+* Added new filter for attachment post titles 'prso_gform_pluploader_attachment_post_title'
+* Added new option to not mark videos as private when uploading to youtube
+
 = 1.20 =
 * Confirmed that plugin works with Wordpress 4.0.
 
@@ -167,6 +171,11 @@ This option can be hit and miss in some older browsers, that said it works in mo
 
 == Upgrade Notice ==
 
+= 1.21 =
+* Wordpress 4.0 support
+* Added new filter for attachment post titles 'prso_gform_pluploader_attachment_post_title'
+* Added new option to not mark videos as private when uploading to youtube
+
 = 1.19 =
 * Security update. Added short life nonce to youtube video uploader async requests. Wanted to lock this down some more.
 
@@ -211,3 +220,4 @@ Filters:
 * 'prso_gform_pluploader_container'
 * 'prso_gform_pluploader_server_validation_args'
 * 'prso_gform_pluploader_entry_attachment_links'
+* 'prso_gform_pluploader_attachment_post_title'

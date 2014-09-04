@@ -1279,6 +1279,8 @@ class PrsoGformsAdvUploaderInit {
 						$post_title = esc_attr($file_base_name);
 					}
 					
+					//Apply title filters
+					$post_title = apply_filters( 'prso_gform_pluploader_attachment_post_title', $post_title, $entry );
 					
 					//Create the attachment array required for wp_insert_attachment()
 					$attachment = array(

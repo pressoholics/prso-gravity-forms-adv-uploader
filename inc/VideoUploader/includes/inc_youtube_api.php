@@ -227,13 +227,16 @@ class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 	private function youtube_api_upload_video( $attachment_data ) {
 		
 		//Init vars
-		$file_type		= NULL;
-		$path_info		= NULL;
-		$myVideoEntry 	= NULL;
-		$uploadUrl		= NULL;
-		$filesource		= NULL;
-		$newEntry		= NULL;
-		$output			= NULL;
+		$file_type			= NULL;
+		$path_info			= NULL;
+		$myVideoEntry 		= NULL;
+		$uploadUrl			= NULL;
+		$filesource			= NULL;
+		$newEntry			= NULL;
+		$output				= NULL;
+		
+		//Cache plugin options
+ 		$plugin_options = get_option( PRSOGFORMSADVUPLOADER__OPTIONS_NAME );
 		
 		//Check for required data
 		if( isset($attachment_data['file_path'], $attachment_data['mime_type'], $attachment_data['title'], $attachment_data['description']) ) {
@@ -270,7 +273,9 @@ class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 			$myVideoEntry->setVideoCategory('Autos');
 			
 			//Set video upload as private
-			$myVideoEntry->setVideoPrivate();
+			if( $plugin_options['video_is_private'] ){
+				$myVideoEntry->setVideoPrivate();
+			}
 			
 			// try to upload the video, catching a Zend_Gdata_App_HttpException, 
 			// if available, or just a regular Zend_Gdata_App_Exception otherwise

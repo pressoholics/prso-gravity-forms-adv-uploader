@@ -498,11 +498,14 @@ class PrsoGformsAdvUploaderInit {
 				$input = "<div class='ginput_container prso_plupload'><span class='gform_drop_instructions'>Advanced Uploader</span></div>";
 				
 			} else {
-				
+			
 				ob_start();
 				?>
 				<div class='ginput_container prso_plupload'><input name='input_%s' id='%s' type='hidden' /></div>
 				<?php
+				
+				echo $this->get_exisiting_file_input_html( $field["id"] );
+				
 				$input = ob_get_contents();
 				ob_end_clean();
 				
@@ -556,6 +559,126 @@ class PrsoGformsAdvUploaderInit {
 	    }
 	    
 	    return $input;
+	}
+	
+	/**
+	* get_exisiting_file_input_html
+	* 
+	* Helper to generate all the hidden field html and javacript local vars
+	* requied to place a file already on the tmp folder back into an instance
+	* of plupload.
+	* 
+	* @access 	private
+	* @author	Ben Moody
+	*/
+	private function get_exisiting_file_input_html( $field_id ) {
+		
+		//Init vars
+		$tmp_uploads 	= array();
+		$js_vars		= array();
+		$output			= NULL;
+		
+		if( isset($_POST['plupload'][$field_id]) ) {
+			
+			$tmp_uploads = $_POST['plupload'][$field_id];
+			
+			if( is_array($tmp_uploads) && !empty($tmp_uploads) ) {
+				
+				//Loop encrypted filenames of all active uploads and get the input html foreach
+				foreach( $tmp_uploads as $file_upload_number => $encrypted_filename ) {
+					
+					$file_name_field 	= "pluploader_{$field_id}_{$file_upload_number}_name";
+					$file_tmpname_field = "pluploader_{$field_id}_{$file_upload_number}_tmpname";
+					
+					//Get input html
+					if( isset($_POST[$file_tmpname_field]) ) {
+						
+						//Input html
+						$output.= $this->get_form_input_html_for_file( $_POST[$file_name_field], $_POST[$file_tmpname_field], $encrypted_filename, $field_id, $file_upload_number );
+						
+						//Cache file details for javascript var
+						$js_vars[$field_id.'_'.$file_upload_number] = array(
+							'id'	=>	esc_attr($_POST[$file_tmpname_field]),
+							'name'	=>	esc_attr($_POST[$file_name_field])
+						);
+						
+					}
+					
+				}
+				
+			}
+			
+			//Add javascript local vars to output
+			ob_start();
+			?>
+			<script type="text/javascript">
+			/* &lt;![CDATA[ */
+			var WpPrsoPluploadPluginFiles = {
+			<?php
+			
+				if( !empty($js_vars) ) {
+					foreach( $js_vars as $file_number => $file_data ) {
+					
+						echo '"'. $file_number .'": {';
+							
+							echo '"id":"'. $file_data['id'] .'",';
+							echo '"name":"'. $file_data['name'] .'"';
+						
+						echo '},';
+						
+					}
+				}
+				
+			?>
+			};
+			/* ]]&gt; */
+			</script>
+			<?php
+			$output.= ob_get_contents();
+			ob_end_clean();
+
+		}
+		
+		return $output;
+	}
+	
+	/**
+	* get_form_input_html_for_file
+	* 
+	* Helper to generate the field inputs required at add files already uploaded to the tmp folder on the
+	* server back into a plupload instance. For example after failed validation.
+	* 
+	* @param	string	$original_file_name		- original filename as on users computer
+	* @param	string	$file_tmp_name			- tmp file name given by plupload
+	* @param	string	$file_id				- encrypted file id
+	* @param	int		$field_id				- Gforms field id
+	* @param	int		$file_upload_number		- order of file in plkupload queue
+	* @return	string	$output
+	* @access 	private
+	* @author	Ben Moody
+	*/
+	private function get_form_input_html_for_file( $original_file_name, $file_tmp_name, $file_id, $field_id, $file_upload_number = null ) {
+		
+		//Init vars
+		$output = NULL;
+		$file_tmp_name_no_ext = NULL;
+		
+		$file_tmp_name_no_ext = preg_replace('/\\.[^.\\s]{3,4}$/', '', $file_tmp_name);
+		
+		ob_start();
+		?>
+		<!-- Add fileds created by pluploader !-->
+		<input type="hidden" name="pluploader_<?php esc_attr_e($field_id); ?>_<?php esc_attr_e($file_upload_number); ?>_tmpname" value="<?php esc_attr_e($file_tmp_name); ?>" />
+		<input type="hidden" name="pluploader_<?php esc_attr_e($field_id); ?>_<?php esc_attr_e($file_upload_number); ?>_name" value="<?php esc_attr_e($original_file_name); ?>" />
+		
+		<!-- Add field for our plugin !-->
+		<input type="hidden" value="<?php esc_attr_e($file_id); ?>" name="plupload[<?php esc_attr_e($field_id); ?>][]" id="gform-plupload-<?php esc_attr_e($file_tmp_name_no_ext); ?>">
+		<?php
+		$output = ob_get_contents();
+		ob_end_clean();
+		
+		return $output;
+		
 	}
 	
 	/**

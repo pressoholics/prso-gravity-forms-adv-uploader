@@ -7,8 +7,14 @@
 		
 		//console.log(LocalizedPluginVars);
 		
+		//Hook into gforms js action 'gform_page_loaded', runs when when page had loaded after ajax submission
+		jQuery(document).bind('gform_page_loaded', function(){
+	    	init_pluploader();
+	    });
+		
 		//Loop the plupload field init vars from wordpress and init plupload for each one
-		jQuery.each( LocalizedPluginVars, function( key, PrsoPluploadVars ){
+		function init_pluploader() {
+			jQuery.each( LocalizedPluginVars, function( key, PrsoPluploadVars ){
 			
 			//Init Plupload
 			jQuery("#" + PrsoPluploadVars.element).plupload({
@@ -78,6 +84,28 @@
 					PostInit: function() {
 						//Hide browser detection message
 						document.getElementById('filelist').innerHTML = '';
+						
+						//Add any active files to plupload
+						if (typeof WpPrsoPluploadPluginFiles !== 'undefined') {
+							
+							var activeFiles = [];
+							
+							jQuery.each( WpPrsoPluploadPluginFiles, function( index, value ){
+								
+								var file = new plupload.File({'name':value.name});
+								file.id = value.id;
+								file.percent = 100;
+								file.status	= 'DONE';
+								
+								//Add this file object to array of active files
+								activeFiles.push( file );
+								
+							});
+							
+							//Add active files to plupload
+							this.addFile( activeFiles );
+						}
+						
 			        },
 					FileUploaded: function(up, file, response) {
 						
@@ -165,6 +193,8 @@
 			});
 			
 		});
+		}
+		init_pluploader();
 		
 	});
 

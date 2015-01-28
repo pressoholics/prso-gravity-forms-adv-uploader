@@ -334,6 +334,7 @@ class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 						
 						//Get video id from youtube returned object
 						$validated_attachments[$field_id][$key]['video_id'] = $YoutubeObj->getVideoId();
+						$validated_attachments[$field_id][$key]['video_url'] = $YoutubeObj->getVideoWatchPageUrl();
 						
 						//Unset youtube object from array
 						unset( $validated_attachments[$field_id][$key]['video_data'] );

@@ -5,7 +5,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: gravity forms, gravity forms file upload, gravity forms file uploader, gravity forms uploader, plupload, gravity forms videos, gravity forms youtube, youtube uploader, youtube file uploader
 Requires at least: 3.0
 Tested up to: 4.1
-Stable tag: 1.22
+Stable tag: 1.23
 
 Chunked Multiple file uploads, Auto upload of videos to YouTube & Brightcove, Files stored in WP Media Library, Advanced options.
 
@@ -59,6 +59,14 @@ NOTE: You will require PHP iconv extension installed on server for YouTube uploa
 == Frequently Asked Questions ==
 
 More info over at GitHub (https://github.com/pressoholics/prso-gravity-forms-adv-uploader).
+
+= Notification Email Support =
+
+Extend Gravity forms advanced uploader and show a list of all local uploads as well as any external uploads (Youtube, ect) in GravityForms user notification emails.
+
+[Learn More about notification email support][emailaddon learnmore]
+
+[emailaddon learnmore]: http://benjaminmoody.com/downloads/gravity-forms-adv-uploads-email-tag-addon/
 
 = Change Plupload Language =
 
@@ -122,6 +130,9 @@ This option can be hit and miss in some older browsers, that said it works in mo
 
 == Changelog ==
 
+= 1.23 =
+* Added support for addon plugins
+
 = 1.22 =
 * Added support for Ajax form submissions
 * Files now stay in queue after a failed validation
@@ -174,6 +185,9 @@ This option can be hit and miss in some older browsers, that said it works in mo
 * Inital commit to plugin repo
 
 == Upgrade Notice ==
+
+= 1.23 =
+* Added support for addon plugins, such as Email Notification Support
 
 = 1.22 =
 Added support for Ajax form submissions, Files now stay in queue after a failed validation

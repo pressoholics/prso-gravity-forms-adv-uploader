@@ -61,7 +61,9 @@ class PrsoGformsAdvUploaderInit {
  		$this->plugin_inc_path = PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc';
  		
  		//Cache plugin options
+ 		global $prso_gforms_adv_uploader_options;
  		$this->plugin_options = get_option( PRSOGFORMSADVUPLOADER__OPTIONS_NAME );
+ 		$prso_gforms_adv_uploader_options = $this->plugin_options;
  		
  		//Cache UI
  		$this->user_interface = $this->plugin_options['ui_select'];
@@ -112,6 +114,7 @@ class PrsoGformsAdvUploaderInit {
 		}
 		
 	}
+	
 	
 	/**
 	* enqueue_scripts
@@ -1267,6 +1270,8 @@ class PrsoGformsAdvUploaderInit {
 
 		}
 		
+		do_action( 'prso_gform_pluploader_save_uploads_end', $entry, $form, $wp_attachment_data );
+		
 	}
 	
 	/**
@@ -1623,6 +1628,7 @@ class PrsoGformsAdvUploaderInit {
 		if( !isset($_GET['lid']) ) {
 			
 			if( isset($field['type']) &&  $field['type'] === 'prso_gform_pluploader' ) {
+				
 				return __("View form entry for file details.", "prso-gforms-plupload");
 			}
 			

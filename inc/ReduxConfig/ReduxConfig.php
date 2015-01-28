@@ -596,12 +596,13 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 					
 				)
 			);
-
+			
+			$this->sections = apply_filters( 'prso_gform_pluploader_redux_options', $this->sections );
+			
 			$this->sections[] = array(
 				'type' => 'divide',
 			);
-
-
+			
 			if(file_exists(trailingslashit(dirname(__FILE__)) . 'README.html')) {
 			    $tabs['docs'] = array(
 					'icon' => 'el-icon-book',

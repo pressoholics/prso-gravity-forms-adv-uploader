@@ -340,8 +340,10 @@ class PrsoAdvVideoUploader {
 			//Call method to process attachments
 			$this->process_wp_attachments( $wp_attachment_data, $entry, $form );
 			
+			do_action( 'prso_gform_pluploader_videos_uploads_end', $entry, $form, $wp_attachment_data );
+			
 		}
-
+		
 		die();
 	}
 	
@@ -774,7 +776,7 @@ class PrsoAdvVideoUploader {
 			$entry_id = $this->data['gforms_entry']['id'];
 			
 			//Allow devs to hook before we get the gravity form table names ect
-			do_action('prso_gform_youtube_uploader_pre_update_meta');
+			do_action('prso_gform_youtube_uploader_pre_update_meta', $field_values, $this->data);
 			
 			//Get gravity forms table names
 			$lead_details_table_name 		=  RGFormsModel::get_lead_details_table_name();

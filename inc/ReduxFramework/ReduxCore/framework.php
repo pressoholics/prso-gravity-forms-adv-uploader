@@ -1155,7 +1155,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
                     }
                 }
             }
-            
+           
             add_action( "load-{$this->page}", array( &$this, '_load_page' ) );
 
         } // _options_page()
@@ -2409,7 +2409,7 @@ if( !class_exists( 'ReduxFramework' ) ) {
          * @return      void
          */
         public function _options_page_html() {
-
+        
             $saved = get_transient( "redux-saved-{$this->args['opt_name']}" );
             if ( $saved ) {
                 delete_transient( "redux-saved-{$this->args['opt_name']}" );

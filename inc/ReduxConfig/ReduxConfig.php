@@ -252,8 +252,25 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 				$sampleHTML = $wp_filesystem->get_contents(dirname(__FILE__).'/info-html.html');
 			}
 
-
-
+			//Plugin Help Section
+			$this->sections[] = array(
+				'title' => __('Addons', $this->text_domain),
+				'desc' => __('', $this->text_domain),
+				'icon' => 'el-icon-info-sign',
+			    // 'submenu' => false, // Setting submenu to false on a given section will hide it from the WordPress sidebar menu!
+				'fields' => array(
+					array(
+					    'id'       => 'help-raw',
+					    'type'     => 'raw',
+					    'title'    => __('', 'redux-framework-demo'),
+					    'content'  => file_get_contents(dirname(__FILE__) . '/addons.html')
+					)
+				)
+			);
+			
+			$this->sections[] = array(
+				'type' => 'divide',
+			);
 
 			// ACTUAL DECLARATION OF SECTIONS
 			$this->sections[] = array(

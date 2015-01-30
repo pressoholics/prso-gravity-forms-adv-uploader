@@ -340,6 +340,13 @@ class PrsoAdvVideoUploader {
 			//Call method to process attachments
 			$this->process_wp_attachments( $wp_attachment_data, $entry, $form );
 			
+			//Convert the fields array back into an object as the video uploader changes it into an array
+			if( isset($form['fields']) ) {
+				foreach( $form['fields'] as $key => $field ) {
+					$form['fields'][ $key ] = GF_Fields::create( $field );
+				}
+			}
+			
 			do_action( 'prso_gform_pluploader_videos_uploads_end', $entry, $form, $wp_attachment_data );
 			
 		}

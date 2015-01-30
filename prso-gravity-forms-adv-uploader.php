@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/pressoholics/prso-gravity-forms-adv-uploader
  * Description: Multiple file uploader with advanced options for Gravity Forms plugin.
  * Author: Benjamin Moody
- * Version: 1.23
+ * Version: 1.24
  * Author URI: http://www.benjaminmoody.com
  * License: GPL2+
  * Text Domain: prso_gforms_adv_uploader_plugin
@@ -13,7 +13,7 @@
 
 //Define plugin constants
 define( 'PRSOGFORMSADVUPLOADER__MINIMUM_WP_VERSION', '3.0' );
-define( 'PRSOGFORMSADVUPLOADER__VERSION', '1.23' );
+define( 'PRSOGFORMSADVUPLOADER__VERSION', '1.24' );
 define( 'PRSOGFORMSADVUPLOADER__DOMAIN', 'prso_gforms_adv_uploader_plugin' );
 
 //Plugin admin options will be available in global var with this name, also is database slug for options

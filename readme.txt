@@ -5,7 +5,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: gravity forms, gravity forms file upload, gravity forms file uploader, gravity forms uploader, plupload, gravity forms videos, gravity forms youtube, youtube uploader, youtube file uploader
 Requires at least: 3.0
 Tested up to: 4.1
-Stable tag: 1.23
+Stable tag: 1.24
 
 Chunked Multiple file uploads, Auto upload of videos to YouTube & Brightcove, Files stored in WP Media Library, Advanced options.
 
@@ -130,6 +130,9 @@ This option can be hit and miss in some older browsers, that said it works in mo
 
 == Changelog ==
 
+= 1.24 =
+* Bugfix with video uploader and email notifiation addon
+
 = 1.23 =
 * Added support for addon plugins
 
@@ -185,6 +188,9 @@ This option can be hit and miss in some older browsers, that said it works in mo
 * Inital commit to plugin repo
 
 == Upgrade Notice ==
+
+= 1.24 =
+* Bugfix with video uploader and email notifiation addon
 
 = 1.23 =
 * Added support for addon plugins, such as Email Notification Support

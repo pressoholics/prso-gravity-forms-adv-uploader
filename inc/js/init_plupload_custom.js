@@ -4,6 +4,7 @@
 		
 		//Init vars
 		var LocalizedPluginVars = WpPrsoPluploadPluginVars;
+		var GformSubmitButton	= jQuery('.gform_footer').find(':submit');
 		
 		//console.log(LocalizedPluginVars);
 		
@@ -128,6 +129,9 @@
 						
 						var file_added_result = false;
 						
+						//Disable submit button until upload complete or all files removed
+						hide_submit_button();
+						
 						//Remove files if max limit reached
 		                plupload.each(selectedFiles, function(file) {
 		                	
@@ -148,6 +152,9 @@
 			                    file_added_result = true;
 			                    
 		                    }
+		                    
+		                    //If there no more files in the queue, enable the submit button
+		                    unhide_submit_on_empty_queue( up );
 		                    
 		                });
 		                
@@ -172,7 +179,18 @@
 						//console.log(files);
 						//Remove hidden gforms input for this file
 						jQuery("#gform-plupload-" + files[0].id).remove();
-					
+						
+						//If there no more files in the queue, enable the submit button
+	                    unhide_submit_on_empty_queue( up );
+						
+					},
+					UploadComplete: function(up, files) {
+						
+						//Unhide submit button
+						if( GformSubmitButton.length > 0 ) {
+		                    GformSubmitButton.fadeIn();
+		                }
+						
 					}
 				}
 				
@@ -183,6 +201,26 @@
 		});
 		}
 		init_pluploader();
+		
+		//Helper to unhide form submit button if there are no files in upload queue
+		function unhide_submit_on_empty_queue( FileUploads ) {
+			
+			if( FileUploads.files.length === 0 ) {
+                if( GformSubmitButton.length > 0 ) {
+                    GformSubmitButton.fadeIn();
+                }
+            }
+			
+		}
+		
+		//Helper to hide submit button, used when files are added to upload queue
+		function hide_submit_button() {
+			
+			if( GformSubmitButton.length > 0 ) {
+                GformSubmitButton.fadeOut();
+            }
+			
+		}
 		
 	});
 

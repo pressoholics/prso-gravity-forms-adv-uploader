@@ -201,9 +201,7 @@
 					UploadComplete: function(up, files) {
 						
 						//Unhide submit button
-						if( GformSubmitButton.length > 0 ) {
-		                    GformSubmitButton.fadeIn();
-		                }
+						show_submit_button();
 						
 					}
 				}
@@ -217,10 +215,36 @@
 		//Helper to unhide form submit button if there are no files in upload queue
 		function unhide_submit_on_empty_queue( FileUploads ) {
 			
+			var showSubmitButton = true;
+			
+			//If there are no file in the queue
 			if( FileUploads.files.length === 0 ) {
-                if( GformSubmitButton.length > 0 ) {
-                    GformSubmitButton.fadeIn();
-                }
+			
+                show_submit_button();
+                
+            } else {
+	            
+	            //Loop files, if all are 100% uploaded then show submit button
+	            jQuery.each(FileUploads.files, function(index,file) {
+		            
+                	if( file.percent < 100 ) {
+	                	showSubmitButton = false;
+                	}
+                    
+                });
+	            
+	            if( showSubmitButton === true ) {
+		           show_submit_button();
+	            }
+	            
+            }
+			
+		}
+		
+		function show_submit_button() {
+			
+			if( GformSubmitButton.length > 0 ) {
+                GformSubmitButton.css('visibility', 'visible');
             }
 			
 		}
@@ -229,7 +253,7 @@
 		function hide_submit_button() {
 			
 			if( GformSubmitButton.length > 0 ) {
-                GformSubmitButton.fadeOut();
+                GformSubmitButton.css('visibility', 'hidden');
             }
 			
 		}

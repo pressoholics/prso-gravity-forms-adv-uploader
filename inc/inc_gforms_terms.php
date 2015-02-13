@@ -276,21 +276,23 @@ class PrsoGformsTermsFunctions {
 		//Init vars
 		
 	    // cycle through fields to see if tos is being used
-	    foreach ( $form['fields'] as $field ) {
+	    if( isset($form['fields']) && is_array($form['fields']) ) {
+		    foreach ( $form['fields'] as $field ) {
 	
-	        if( ($field['type'] == 'tos') && (isset($field['field_tos'])) ) {
-	
-	            $url = plugins_url( '/js/gform_tos.js' , __FILE__ );
-	            
-	            //Filter script url allowing devs to override the tos behaviour
-	            $url = apply_filters( 'prso_gform_tos_script_url', $url, $form, $ajax );
-	            
-	            wp_enqueue_script( "gform_tos_script", $url , array(), '1.0', TRUE );
-	
-	            break;
-	
-	        }
-	
+		        if( ($field['type'] == 'tos') && (isset($field['field_tos'])) ) {
+		
+		            $url = plugins_url( '/js/gform_tos.js' , __FILE__ );
+		            
+		            //Filter script url allowing devs to override the tos behaviour
+		            $url = apply_filters( 'prso_gform_tos_script_url', $url, $form, $ajax );
+		            
+		            wp_enqueue_script( "gform_tos_script", $url , array(), '1.0', TRUE );
+		
+		            break;
+		
+		        }
+		
+		    }
 	    }
 	
 	}

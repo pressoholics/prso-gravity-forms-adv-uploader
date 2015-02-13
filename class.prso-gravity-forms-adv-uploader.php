@@ -17,7 +17,7 @@ class PrsoGformsAdvUploader {
 		add_action( 'after_setup_theme', array($this, 'plugin_textdomain') );
 		
 		//Init plugin
-		add_action( 'init', array($this, 'init_plugin') );
+		add_action( 'init', array($this, 'init_plugin'), 999 );
 		
 		//Init plugin core
 		$core_include = $this->plugin_path . 'class.core.init-uploader.php';

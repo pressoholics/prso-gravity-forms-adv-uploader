@@ -924,6 +924,10 @@ class PrsoAdvVideoUploader {
 						
 						break;
 					default:
+						
+						//Get instance of other api's via addons
+						$result = apply_filters( 'prso_gform_pluploader_video_api_instance', $result, $selected_api, $plugin_options );
+						
 						break;
 				}
 				
@@ -1004,9 +1008,8 @@ class PrsoAdvVideoUploader {
 	
 	protected function plugin_error_log( $var ) {
 		
-		@ini_set('log_errors','On');
-		@ini_set('display_errors','Off');
-		@ini_set('error_log', $this->plugin_path . '/php_error.log');
+		ini_set('log_errors',1);
+		ini_set('error_log', $this->plugin_path . '/php_error.log');
 		
 		if( !is_string($var) ) {
 			error_log( print_r($var, true) );

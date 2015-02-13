@@ -1261,7 +1261,7 @@ class PrsoGformsAdvUploaderInit {
 				}
 				
 				//If there is some field data to process let's process it!
-				$wp_attachment_data = $this->process_uploads( $pluploader_field_data, $entry, $attachment_parent_ID );
+				$wp_attachment_data = $this->process_uploads( $pluploader_field_data, $entry, $attachment_parent_ID, $form );
 				
 				//Action hook for successfully completed uploads
 				do_action( 'prso_gform_pluploader_processed_uploads', $wp_attachment_data, $entry, $form );
@@ -1286,7 +1286,7 @@ class PrsoGformsAdvUploaderInit {
 	* @access 	private
 	* @author	Ben Moody
 	*/
-	private function process_uploads( $pluploader_field_data = array(), $entry = array(), $attachment_parent_ID = NULL ) {
+	private function process_uploads( $pluploader_field_data = array(), $entry = array(), $attachment_parent_ID = NULL, $form ) {
 		
 		//Init vars
 		$pluploader_wp_attachment_data = array(); //Cache the attachement post id's of each uploaded file for each field 
@@ -1309,7 +1309,7 @@ class PrsoGformsAdvUploaderInit {
 						$file_base_name = $this->name_decrypt( esc_attr($uploaded_file) );
 						
 						//Call function to add this file to wp media library and cache it's post id 
-						if( $attach_id = $this->insert_attachment( $upload_id, $file_base_name, $entry, $attachment_parent_ID ) ) {
+						if( $attach_id = $this->insert_attachment( $upload_id, $file_base_name, $entry, $attachment_parent_ID, $form ) ) {
 							$pluploader_wp_attachment_data[$field_id][] = $attach_id;
 						}
 						
@@ -1347,7 +1347,7 @@ class PrsoGformsAdvUploaderInit {
 	* @returns	int		$attach_id - WP attachment post id for file
 	* @author	Ben Moody
 	*/
-	private function insert_attachment( $upload_id = NULL, $file_base_name = NULL, $entry = array(), $attachment_parent_ID = NULL ) {
+	private function insert_attachment( $upload_id = NULL, $file_base_name = NULL, $entry = array(), $attachment_parent_ID = NULL, $form ) {
 		
 		//Init vars
 		$pluploader_tmp_dir		= NULL;
@@ -1363,6 +1363,9 @@ class PrsoGformsAdvUploaderInit {
 		
 		if( isset($upload_id, $file_base_name, $entry['id'], $entry['form_id']) ) {
 			
+			//Allow devs to filter filename
+			$file_base_name = apply_filters( 'prso_gform_pluploader_file_base_name', $file_base_name, $entry, $form );
+			
 			//Allow devs to hook into the functio before getting wp info
 			do_action( 'prso_gform_pluploader_pre_insert_attachment' );
 			
@@ -1373,7 +1376,7 @@ class PrsoGformsAdvUploaderInit {
 			$pluploader_tmp_dir = $wp_upload_dir['basedir'] . '/' . self::$prso_pluploader_tmp_dir_name . '/';
 			
 			//FILTER - Allow devs to filter the wp_upload_dir array before inserting attachment
-			$wp_upload_dir = apply_filters( 'prso_gform_pluploader_wp_upload_dir', $wp_upload_dir );
+			$wp_upload_dir = apply_filters( 'prso_gform_pluploader_wp_upload_dir', $wp_upload_dir, $entry, $form );
 			
 			//Cache tmp location of file on server
 			$uploaded_file_path = $pluploader_tmp_dir . $file_base_name;

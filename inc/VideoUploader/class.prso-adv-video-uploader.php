@@ -853,22 +853,29 @@ class PrsoAdvVideoUploader {
 		//so we need to output a link for it
 		if( is_array($file_data) ) {
 			
-			//Get and instance of the selected API
-			$ApiObj = $this->load_selected_api();
-			
-			if( isset($file_data['video_id']) ) {
-				$video_id = $file_data['video_id'];
-			}
-			
-			//Look for a video_id and request that the video api class return a link
-			if( method_exists($ApiObj, 'get_video_url') ) {
-			
-				$video_link = $ApiObj->get_video_url( $video_id );
+			if( isset($file_data['video_url']) ) {
 				
-				$file_url = esc_url( $video_link );
+				$file_url = esc_url( $file_data['video_url'] );
+				
+			} else {
+				
+				//Get and instance of the selected API
+				$ApiObj = $this->load_selected_api();
+				
+				if( isset($file_data['video_id']) ) {
+					$video_id = $file_data['video_id'];
+				}
+				
+				//Look for a video_id and request that the video api class return a link
+				if( method_exists($ApiObj, 'get_video_url') ) {
+				
+					$video_link = $ApiObj->get_video_url( $video_id );
+					
+					$file_url = esc_url( $video_link );
+					
+				}
 				
 			}
-			
 			
 		}
 		

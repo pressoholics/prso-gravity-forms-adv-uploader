@@ -694,14 +694,29 @@ class PrsoGformsAdvUploaderInit {
 	* @author	Ben Moody
 	*/
 	public function pluploader_editor_js(){
-	
+		
+		//Init vars
+		$registered_fields = array(
+			'prso_pluploader_file_extensions_setting',
+			'prso_pluploader_file_size_setting',
+			'prso_pluploader_max_files_setting'
+		);
+		$js_registered_fields = NULL;
+		
+		$registered_fields = apply_filters( 'prso_gform_pluploader_register_std_options_js', $registered_fields );
+		
+		//Loop registered fields and form js string
+		foreach( $registered_fields as $field ) {
+			$js_registered_fields.= ", .{$field}";
+		}
+		
 		?>
 		<script type='text/javascript'>
 		 
 		    jQuery(document).ready(function($) {
 		 
 		        //View forms.js for examples of options
-		        fieldSettings["prso_gform_pluploader"] = ".label_setting, .description_setting, .admin_label_setting, .css_class_setting, .prso_pluploader_file_extensions_setting, .prso_pluploader_file_size_setting, .prso_pluploader_max_files_setting";
+		        fieldSettings["prso_gform_pluploader"] = ".label_setting, .description_setting, .admin_label_setting, .css_class_setting<?php echo $js_registered_fields; ?>";
 		        
 		        //Hook into gform load field settings to initialize file extension settings
 		        jQuery(document).bind( "gform_load_field_settings", function(event, field, form){
@@ -724,6 +739,17 @@ class PrsoGformsAdvUploaderInit {
 			        }
 			        jQuery("#prso_pluploader_max_files").val( field["prso_pluploader_max_files"] );
 			        
+			        <?php
+				    /**
+				    * prso_gform_pluploader_register_std_options_js_values
+				    * 
+				    * Output javascript required to store option values
+					*
+				    * @author	Ben Moody
+				    */
+				    echo apply_filters( 'prso_gform_pluploader_register_std_options_js_values', NULL );
+			        ?>
+			        
 		        });
 		        
 		    });
@@ -734,26 +760,106 @@ class PrsoGformsAdvUploaderInit {
 	
 	public function pluploader_standard_field_settings( $position, $form_id ) {
 		
+		//Init vars
+		$html_output = NULL;
+		
 		if( isset($position) && $position == 50 ) {
-		?>
-			<li class="prso_pluploader_file_extensions_setting field_setting" style="display: list-item;">
-               <label for="prso_pluploader_file_extensions">Allowed file extensions</label>
-               <input type="text" onkeyup="SetFieldProperty('prso_pluploader_file_extensions', this.value);" size="40" id="prso_pluploader_file_extensions">
-               <div><small>Separated with commas (i.e. jpg, gif, png, pdf)</small></div>
-            </li>
-            <li class="prso_pluploader_max_files_setting field_setting" style="display: list-item;">
-               <label for="prso_pluploader_max_files">Max number of files</label>
-               <input type="text" onkeyup="SetFieldProperty('prso_pluploader_max_files', this.value);" size="40" id="prso_pluploader_max_files" >
-               <div><small>Number of files users can upload (defaults to 2)</small></div>
-            </li>
-            <li class="prso_pluploader_file_size_setting field_setting" style="display: list-item;">
-               <label for="prso_pluploader_file_size">Maximum file size (MB)</label>
-               <input type="text" onkeyup="SetFieldProperty('prso_pluploader_file_size', this.value);" size="40" id="prso_pluploader_file_size" >
-               <div><small>Max file size in MB (defaults to 1MB)</small></div>
-            </li>
-		<?php
+		
+			//Call method to register the default std option fields, addon can use the filter to add more
+			$this->register_std_option_fields();
+			
+			/**
+			* Action 'prso_gform_pluploader_register_std_options_fields'
+			* 
+			* Allow addons to hook in and add more std options fields
+			* 
+			* @param	int	$postition
+			* @param	int	$form_id
+			* @author	Ben Moody
+			*/
+			do_action( 'prso_gform_pluploader_register_std_options_fields', $position, $form_id );
+			
+			/**
+			* Filter 'prso_gform_pluploader_std_options_fields'
+			* 
+			* Get std options field html. Use this to add new std option fields to
+			* the uploader field in form edit view.
+			* 
+			* @param	int	$postition
+			* @param	int	$form_id
+			* @author	Ben Moody
+			*/
+			$html_output = apply_filters( 'prso_gform_pluploader_std_options_fields', $html_output, $position, $form_id );
+		
+			
+			echo $html_output;
 		}
 		
+	}
+	
+	private function register_std_option_fields() {
+		
+		//Cache Allowed file extentions field first
+		add_filter( 'prso_gform_pluploader_std_options_fields', array($this, 'register_option_field__file_ext'), 1, 3);
+		
+		//Cache max files field
+		add_filter( 'prso_gform_pluploader_std_options_fields', array($this, 'register_option_field__max_files'), 2, 3);
+		
+		//Cache max file size field
+		add_filter( 'prso_gform_pluploader_std_options_fields', array($this, 'register_option_field__max_file_size'), 3, 3);
+		
+		
+	}
+	
+	public function register_option_field__file_ext( $html_output, $position, $form_id ) {
+		
+		//Cache Allowed file extentions field first
+		ob_start();
+		?>
+		<li class="prso_pluploader_file_extensions_setting field_setting" style="display: list-item;">
+           <label for="prso_pluploader_file_extensions">Allowed file extensions</label>
+           <input type="text" onkeyup="SetFieldProperty('prso_pluploader_file_extensions', this.value);" size="40" id="prso_pluploader_file_extensions">
+           <div><small>Separated with commas (i.e. jpg, gif, png, pdf)</small></div>
+        </li>
+		<?php
+		$html_output.= ob_get_contents();
+		ob_end_clean();
+		
+		return $html_output;
+	}
+	
+	public function register_option_field__max_files( $html_output, $position, $form_id ) {
+		
+		//Cache max files option field
+		ob_start();
+		?>
+		<li class="prso_pluploader_max_files_setting field_setting" style="display: list-item;">
+           <label for="prso_pluploader_max_files">Max number of files</label>
+           <input type="text" onkeyup="SetFieldProperty('prso_pluploader_max_files', this.value);" size="40" id="prso_pluploader_max_files" >
+           <div><small>Number of files users can upload (defaults to 2)</small></div>
+        </li>
+		<?php
+		$html_output.= ob_get_contents();
+		ob_end_clean();
+		
+		return $html_output;
+	}
+	
+	public function register_option_field__max_file_size( $html_output, $position, $form_id ) {
+		
+		//Cache max file size field
+		ob_start();
+		?>
+		<li class="prso_pluploader_file_size_setting field_setting" style="display: list-item;">
+           <label for="prso_pluploader_file_size">Maximum file size (MB)</label>
+           <input type="text" onkeyup="SetFieldProperty('prso_pluploader_file_size', this.value);" size="40" id="prso_pluploader_file_size" >
+           <div><small>Max file size in MB (defaults to 1MB)</small></div>
+        </li>
+		<?php
+		$html_output.= ob_get_contents();
+		ob_end_clean();
+		
+		return $html_output;
 	}
 	
 	public function pluploader_advanced_field_settings( $position, $form_id ) {
@@ -827,6 +933,17 @@ class PrsoGformsAdvUploaderInit {
 		$output = NULL;
 		
 		if( !empty($field) && isset($field['id']) ) {
+			
+			/**
+			* Action 'prso_gform_pluploader_localize_vars'
+			* 
+			* Allow addons to hook in and get form options to localize
+			* 
+			* @param	array	$form
+			* @param	array	$field
+			* @author	Ben Moody
+			*/
+			do_action( 'prso_gform_pluploader_localize_vars', $form, $field );
 			
 			//Cache any validation settings for this field
 			$args['validation']['allowedExtensions'] = 'jpeg,bmp,png,gif';

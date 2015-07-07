@@ -1499,7 +1499,7 @@ class PrsoGformsAdvUploaderInit {
 			$uploaded_file_path = $pluploader_tmp_dir . $file_base_name;
 			
 			//Cache destination file path
-			$wp_dest_file_path = $wp_upload_dir['path'] . '/' . $file_base_name;
+			$wp_dest_file_path = $wp_upload_dir['path'] . '/' . urlencode($file_base_name);
 			
 			//First let's move this file into the wp uploads dir structure
 			$move_status = $this->move_file( $uploaded_file_path, $wp_dest_file_path );
@@ -2049,7 +2049,7 @@ class PrsoGformsAdvUploaderInit {
 		$entry_id 		= NULL;
 		
 		//Set the checkbox input field html
-		$input_field = '<div style="padding:10px 10px 10px 0;"><input id="prso_pluploader_delete_uploads" type="checkbox" onclick="" name="prso_pluploader_delete_uploads"><label for="prso_fineup_delete_uploads">&nbsp;'. __("Delete Plupload Uploaded Files", "prso-gforms-plupload") .'</label></div>';
+		$input_field = '<div style="padding:10px 10px 10px 0;"><input id="prso_pluploader_delete_uploads" type="checkbox" onclick="" name="prso_pluploader_delete_uploads"><label for="prso_fineup_delete_uploads">&nbsp;'. __("Delete All Uploaded Files", "prso-gforms-plupload") .'</label></div>';
 		
 		//Get entry meta for delete files option
 		if( isset($_GET['lid']) ) {

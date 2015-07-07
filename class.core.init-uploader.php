@@ -1498,8 +1498,19 @@ class PrsoGformsAdvUploaderInit {
 			//Cache tmp location of file on server
 			$uploaded_file_path = $pluploader_tmp_dir . $file_base_name;
 			
+			/**
+			* prso_gform_pluploader_destination_filename
+			*
+			* Allow devs to filter the destination filename before file is moved into wp library
+			*
+			* @since 1.27
+			*
+			* @param $file_base_name
+			*/
+			$destination_filename = apply_filters( 'prso_gform_pluploader_destination_filename', $file_base_name, $entry, $form );
+			
 			//Cache destination file path
-			$wp_dest_file_path = $wp_upload_dir['path'] . '/' . urlencode($file_base_name);
+			$wp_dest_file_path = $wp_upload_dir['path'] . '/' . urlencode($destination_filename);
 			
 			//First let's move this file into the wp uploads dir structure
 			$move_status = $this->move_file( $uploaded_file_path, $wp_dest_file_path );

@@ -1,3 +1,5 @@
+var PrsoAdvUploaders = {};
+
 (function($) {
 
 	jQuery(document).ready(function($) {
@@ -18,7 +20,7 @@
 			jQuery.each( LocalizedPluginVars, function( key, PrsoPluploadVars ){
 			
 			//Init Plupload
-			jQuery("#" + PrsoPluploadVars.element).plupload({
+			PrsoAdvUploaders[ key ] = jQuery("#" + PrsoPluploadVars.element).plupload({
 				// General settings
 				runtimes : PrsoPluploadVars.runtimes,
 				
@@ -107,6 +109,9 @@
 							this.addFile( activeFiles );
 						}
 						
+						//Trigger uploader init complete
+						jQuery(document).trigger('PrsoPluploadInit', PrsoPluploadVars.params.field_id );
+						
 			        },
 					FileUploaded: function(up, file, response) {
 						
@@ -130,6 +135,9 @@
 							var inputField = '<input id="gform-plupload-'+ obj.file_uid +'" type="hidden" name="plupload['+ PrsoPluploadVars.params.field_id +'][]" value="'+ obj.success.file_id +'"/>';
 							
 							jQuery('#gform_' + PrsoPluploadVars.params.form_id).append(inputField);
+							
+							//Trigger uploader file uploaded
+							jQuery(document).trigger('PrsoPluploadFileUploaded', up, file, response );
 							
 						} else {
 							
@@ -196,6 +204,9 @@
 						
 						//If there no more files in the queue, enable the submit button
 	                    unhide_submit_on_empty_queue( up );
+	                    
+	                    //Trigger uploader is empty
+						jQuery(document).trigger('PrsoPluploadFileRemoved', up, files );
 						
 					},
 					UploadComplete: function(up, files) {
@@ -221,6 +232,9 @@
 			if( FileUploads.files.length === 0 ) {
 			
                 show_submit_button();
+                
+                //Trigger uploader is empty
+				jQuery(document).trigger('PrsoPluploadEmpty', FileUploads );
                 
             } else {
 	            

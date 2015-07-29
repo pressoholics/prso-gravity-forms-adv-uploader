@@ -41,12 +41,18 @@ function prso_gformsadv_admin_notice() {
 	global $current_user ;
     $user_id = $current_user->ID;
     
-    /* Check that the user hasn't already clicked to ignore the message */
-	if ( ! get_user_meta($user_id, 'prso_gformsadv_ignore_notice') ) {
-        echo '<div class="updated"><p>'; 
-        printf(__('<strong>New</strong>: GravityForms Advanced Uploads Email Intergration now available. <a href="%1$s" target="_blank">Learn More</a> | <a href="%2$s">Hide Notice</a>'), 'http://benjaminmoody.com/downloads/gravity-forms-adv-uploads-email-tag-addon/', home_url('/wp-admin/index.php').'?prso_gformsadv_ignore_notice=0');
-        echo "</p></div>";
-	}
+    if( current_user_can('update_plugins') ) {
+	    
+	    /* Check that the user hasn't already clicked to ignore the message */
+		if ( ! get_user_meta($user_id, 'prso_gformsadv_ignore_notice') ) {
+	        echo '<div class="updated"><p>'; 
+	        printf(__('<strong>New</strong>: GravityForms Advanced Uploads Email Intergration now available. <a href="%1$s" target="_blank">Learn More</a> | <a href="%2$s">Hide Notice</a>'), 'http://benjaminmoody.com/downloads/gravity-forms-adv-uploads-email-tag-addon/', home_url('/wp-admin/index.php').'?prso_gformsadv_ignore_notice=0');
+	        echo "</p></div>";
+		}
+	    
+    }
+    
+    
 }
 
 add_action('admin_init', 'prso_gformsadv_nag_ignore');

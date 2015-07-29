@@ -7,7 +7,7 @@
  *
  *	Zend YouTube Api Class - This class makes use of the Zend youtube class to upload files
  *	
- *
+ * https://developers.google.com/youtube/v3/code_samples/php#resumable_uploads
  */
 class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 	
@@ -74,13 +74,43 @@ class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 		$returned_video_data = array();
 		$plugin_options		= array();
 		
+		$this->data['is_google_oauth2'] = FALSE;
+		
 		//First try and get the plugin options
 		if( isset($this->plugin_options_slug) ) {
 			$plugin_options = get_option( $this->plugin_options_slug );
 		}
 		
+		//TESTING
+		$plugin_options['google_oauth2_client_id'] 		= '768837103418.apps.googleusercontent.com';
+		$plugin_options['google_oauth2_client_secret'] 	= 'ZZ97qSLPT3gIKI24RpE-Y_FL';
+		
+		//Detect which version of the api we are using via options
+		
 		//Confirm required options are set
-		if( $plugin_options !== FALSE && isset($plugin_options['youtube_api_key_text'], $plugin_options['youtube_username_text'], $plugin_options['youtube_password_text']) ) {
+		if( $plugin_options !== FALSE && isset($plugin_options['google_oauth2_client_id'], $plugin_options['google_oauth2_client_secret']) ) {
+			
+			//Cache path to google api php client library
+			$this->data['google_api_library_path'] = $this->plugin_includes . '/Google';
+			
+			// Call set_include_path() as needed to point to your client library.
+			require_once $this->data['google_api_library_path'] . PATH_SEPARATOR . 'Client.php';
+			require_once $this->data['google_api_library_path'] . PATH_SEPARATOR . 'Service/YouTube.php';
+			session_start();
+			
+			//Setup google oauth2 details
+			$this->data['google_oauth2'] = array(
+				'client_id'		=>	esc_attr( $plugin_options['google_oauth2_client_id'] ),
+				'client_secret'	=>	esc_attr( $plugin_options['google_oauth2_client_secret'] )
+			);
+			
+			
+			$this->data['is_google_oauth2'] = TRUE;
+			
+			$this->init_youtube_oauth2_api_obj();
+			
+		
+		} elseif( $plugin_options !== FALSE && isset($plugin_options['youtube_api_key_text'], $plugin_options['youtube_username_text'], $plugin_options['youtube_password_text']) ) {
 			
 			//Cache path to zend library
 			$this->data['zend_library_path'] = $this->plugin_includes . '/Zend';
@@ -205,14 +235,48 @@ class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 		foreach( $validated_attachments as $field_id => $attachments ) {
 			
 			foreach( $attachments as $key => $attachment_data ) {
-			
-				$validated_attachments[$field_id][$key]['video_data'] = $this->youtube_api_upload_video( $attachment_data );
+				
+				//Detect which api we are using
+				if( TRUE === $this->data['is_google_oauth2'] ) {
+					
+					$validated_attachments[$field_id][$key]['video_data'] = $this->youtube_oauth2_upload_video( $attachment_data );
+					
+				} else {
+					$validated_attachments[$field_id][$key]['video_data'] = $this->youtube_api_upload_video( $attachment_data );
+				}
 				
 			}
 			
 		}
 		
 		return $validated_attachments;
+	}
+	
+	private function youtube_oauth2_upload_video( $attachment_data ) {
+		
+		/*
+		* You can acquire an OAuth 2.0 client ID and client secret from the
+		* Google Developers Console <https://console.developers.google.com/>
+		* For more information about using OAuth 2.0 to access Google APIs, please see:
+		* <https://developers.google.com/youtube/v3/guides/authentication>
+		* Please ensure that you have enabled the YouTube Data API for your project.
+		*/
+		$OAUTH2_CLIENT_ID 		= $this->data['google_oauth2']['client_id'];
+		$OAUTH2_CLIENT_SECRET 	= $this->data['google_oauth2']['client_secret'];
+		
+		$client = new Google_Client();
+		$client->setClientId($OAUTH2_CLIENT_ID);
+		$client->setClientSecret($OAUTH2_CLIENT_SECRET);
+		$client->setScopes('https://www.googleapis.com/auth/youtube');
+		$redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'],
+		FILTER_SANITIZE_URL);
+		$client->setRedirectUri($redirect);
+		
+		// Define an object that will be used to make all API requests.
+		$youtube = new Google_Service_YouTube($client);
+		
+		
+		
 	}
 	
 	/**

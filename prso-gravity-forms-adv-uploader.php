@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/pressoholics/prso-gravity-forms-adv-uploader
  * Description: Multiple file uploader with advanced options for Gravity Forms plugin.
  * Author: Benjamin Moody
- * Version: 1.26
+ * Version: 1.27
  * Author URI: http://www.benjaminmoody.com
  * License: GPL2+
  * Text Domain: prso_gforms_adv_uploader_plugin
@@ -13,7 +13,7 @@
 
 //Define plugin constants
 define( 'PRSOGFORMSADVUPLOADER__MINIMUM_WP_VERSION', '3.0' );
-define( 'PRSOGFORMSADVUPLOADER__VERSION', '1.26' );
+define( 'PRSOGFORMSADVUPLOADER__VERSION', '1.27' );
 define( 'PRSOGFORMSADVUPLOADER__DOMAIN', 'prso_gforms_adv_uploader_plugin' );
 
 //Plugin admin options will be available in global var with this name, also is database slug for options
@@ -41,12 +41,18 @@ function prso_gformsadv_admin_notice() {
 	global $current_user ;
     $user_id = $current_user->ID;
     
-    /* Check that the user hasn't already clicked to ignore the message */
-	if ( ! get_user_meta($user_id, 'prso_gformsadv_ignore_notice') ) {
-        echo '<div class="updated"><p>'; 
-        printf(__('<strong>New</strong>: GravityForms Advanced Uploads Email Intergration now available. <a href="%1$s" target="_blank">Learn More</a> | <a href="%2$s">Hide Notice</a>'), 'http://benjaminmoody.com/downloads/gravity-forms-adv-uploads-email-tag-addon/', home_url('/wp-admin/index.php').'?prso_gformsadv_ignore_notice=0');
-        echo "</p></div>";
-	}
+    if( current_user_can('update_plugins') ) {
+	    
+	    /* Check that the user hasn't already clicked to ignore the message */
+		if ( ! get_user_meta($user_id, 'prso_gformsadv_ignore_notice') ) {
+	        echo '<div class="updated"><p>'; 
+	        printf(__('<strong>New</strong>: GravityForms Advanced Uploads Email Intergration now available. <a href="%1$s" target="_blank">Learn More</a> | <a href="%2$s">Hide Notice</a>'), 'http://benjaminmoody.com/downloads/gravity-forms-adv-uploads-email-tag-addon/', home_url('/wp-admin/index.php').'?prso_gformsadv_ignore_notice=0');
+	        echo "</p></div>";
+		}
+	    
+    }
+    
+    
 }
 
 add_action('admin_init', 'prso_gformsadv_nag_ignore');

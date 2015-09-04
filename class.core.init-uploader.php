@@ -42,7 +42,7 @@ class PrsoGformsAdvUploaderInit {
 	public $prso_pluploader_args 					= NULL;
 	private static $prso_pluploader_tmp_dir_name 	= 'prso-pluploader-tmp';
 	private static $submit_nonce_key 				= 'prso-pluploader-loader-submit-nonce';
-	private static $encrypt_key						= '4ddRp]4X5}R-WU';
+	private static $encrypt_key						= NULL;
 	private $move_div 								= array();
 	
 	protected $plugin_options						= array();
@@ -67,6 +67,9 @@ class PrsoGformsAdvUploaderInit {
  		
  		//Cache UI
  		$this->user_interface = $this->plugin_options['ui_select'];
+ 		
+ 		//Cache encrypt key
+ 		self::$encrypt_key = pack('H*', "bcb04b7e103a0cd8b54763827dba08bc55abe029fdebae5e1d417e2ffb2a00a3");
  		
  		//Init plugin
  		$this->plugin_init();
@@ -171,7 +174,7 @@ class PrsoGformsAdvUploaderInit {
 				
 					//JQuery UI Min
 					wp_register_script( 'plupload-jquery-ui-core', 
-						'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js', 
+						'//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js', 
 						array('jquery'), 
 						'1.10.2', 
 						$in_footer 
@@ -195,7 +198,7 @@ class PrsoGformsAdvUploaderInit {
 					
 					//Register plupload Styles
 					wp_register_style( 'plupload-jquery-ui-core', 
-						'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/themes/smoothness/jquery-ui.min.css', 
+						'//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/themes/smoothness/jquery-ui.min.css', 
 						NULL, 
 						'1.10.2', 
 						'screen' 
@@ -1756,7 +1759,7 @@ class PrsoGformsAdvUploaderInit {
 	public function pluploader_entry_index_table_value( $value, $lead, $field, $input_id ) {
 		
 		//First detect one of our pluploader fields
-		if( !isset($_GET['lid']) ) {
+		if( !isset($_GET['lid']) && is_admin() ) {
 			
 			if( isset($field['type']) &&  $field['type'] === 'prso_gform_pluploader' ) {
 				

@@ -5,7 +5,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: gravity forms, gravity forms file upload, gravity forms file uploader, gravity forms uploader, plupload, gravity forms videos, gravity forms youtube, youtube uploader, youtube file uploader
 Requires at least: 3.0
 Tested up to: 4.3
-Stable tag: 1.27
+Stable tag: 1.3
 
 Chunked Multiple file uploads, Auto upload of videos to YouTube & Brightcove, Files stored in WP Media Library, Advanced options.
 
@@ -130,6 +130,9 @@ This option can be hit and miss in some older browsers, that said it works in mo
 
 == Changelog ==
 
+= 1.3 =
+* NEW YouTube API! Making use of oauth2 all youtube uploading issues should be a thing of the past!
+
 = 1.27 =
 * Can now return uploaded file id's via gravity forms get_entries function
 * Made sure all external resources are not fixed to http, better support for https
@@ -200,6 +203,9 @@ This option can be hit and miss in some older browsers, that said it works in mo
 * Inital commit to plugin repo
 
 == Upgrade Notice ==
+
+= 1.3 =
+* NEW YouTube API! Making use of oauth2 all youtube uploading issues should be a thing of the past!
 
 = 1.27 =
 * Can now return uploaded file id's via gravity forms get_entries function

@@ -50,6 +50,10 @@ class PrsoGformsAdvUploaderInit {
 	
 	protected $allowed_mimes						= array();
 	
+	public static $google_oauth_client_id			= '768837103418-ejtcvideatj9gsctkcgnurs352p8ehgq.apps.googleusercontent.com';
+	public static $google_oauth_client_secret		= 'eAVvm26dr3UN5WCySMNU8rZc';
+	public static $google_oauth_redirect			= 'urn:ietf:wg:oauth:2.0:oob';
+	
 	//Gforms meta keys
 	private static $delete_files_meta_key		= 'prso-pluploader-delete-files';
 	
@@ -73,6 +77,9 @@ class PrsoGformsAdvUploaderInit {
  		
  		//Init plugin
  		$this->plugin_init();
+ 		
+ 		//Handle Google OAuth 2 requests
+ 		add_action( 'admin_init', array( $this, 'google_oauth' ) );
  		
 	}
 	
@@ -118,6 +125,107 @@ class PrsoGformsAdvUploaderInit {
 		
 	}
 	
+	public function google_oauth() {
+		
+		global $prso_gforms_adv_youtube_auth_url;
+		
+		//Add filter for redux options framework
+		add_filter( 'redux/validate/prso_gforms_adv_uploader_options/before_validation', array($this, 'validate_google_oauth_code'), 10, 2 );
+		
+		//Detect current view
+		if( isset($_GET['page']) && ($_GET['page'] === 'prso_gforms_adv_uploader_options_options') ) {
+			
+			//TESTING
+			$client_id 		= self::$google_oauth_client_id;
+			$client_secret 	= self::$google_oauth_client_secret;
+			
+			$scope = 'https://www.googleapis.com/auth/youtube';
+			
+			$oauth2_url = 'https://accounts.google.com/o/oauth2/auth';
+			
+			//Cache oauth youtube param
+			$params = array(
+		        'response_type=code',
+		        'redirect_uri=' . urlencode( self::$google_oauth_redirect ),
+		        'client_id=' . urlencode( $client_id ),
+		        'scope=' . urlencode( $scope ),
+		        'access_type=' . urlencode( 'offline' ),
+		        'approval_prompt=' . urlencode( 'force' ),
+		    );
+		
+		    $params = implode('&', $params);
+			
+			$prso_gforms_adv_youtube_auth_url =  $oauth2_url . "?$params";
+			
+		}
+		
+	}
+	
+	public function validate_google_oauth_code( $plugin_options, $redux_options ) {
+		
+		//Detect oauth code submission
+		if( isset($plugin_options['youtube_api_auth_code']) && !empty($plugin_options['youtube_api_auth_code']) ) {
+			
+			$auth_code = esc_attr( $plugin_options['youtube_api_auth_code'] );
+			
+			//Validate auth code
+			try {
+				$plugin_options['youtube_api_auth_code'] = self::google_oauth_authenticate( $auth_code );
+			} catch (Exception $e) {
+			       return $plugin_options;
+			}
+			
+		}
+		
+		//Delete cahced token?
+		if( empty($plugin_options['youtube_api_auth_code']) ) {
+			delete_option( 'prso_gforms_adv_youtube_token' );
+		}
+		
+		return $plugin_options;
+	}
+	
+	public static function google_oauth_authenticate( $auth_code ) {
+		
+		require_once PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc' . DIRECTORY_SEPARATOR . 'VideoUploader' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'Google' . DIRECTORY_SEPARATOR . 'autoload.php';
+		
+		require_once PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc' . DIRECTORY_SEPARATOR . 'VideoUploader' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'Google' . DIRECTORY_SEPARATOR . 'Client.php';
+		
+		require_once PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc' . DIRECTORY_SEPARATOR . 'VideoUploader' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'Google' . DIRECTORY_SEPARATOR . 'Service' . DIRECTORY_SEPARATOR . 'YouTube.php';
+		
+		session_start();
+		
+		$OAUTH2_CLIENT_ID 		= self::$google_oauth_client_id;
+		$OAUTH2_CLIENT_SECRET 	= self::$google_oauth_client_secret;
+		
+		$client = new Google_Client();
+		$client->setClientId($OAUTH2_CLIENT_ID);
+		$client->setClientSecret($OAUTH2_CLIENT_SECRET);
+		$client->setScopes('https://www.googleapis.com/auth/youtube');
+		$client->setRedirectUri( self::$google_oauth_redirect );
+		
+		// Define an object that will be used to make all API requests.
+		$youtube = new Google_Service_YouTube($client);
+		
+		$client->authenticate( $auth_code );
+		
+		$response = $client->getAccessToken();
+		
+		// Check if there is a response body.
+		if ( ! empty( $response ) ) {
+			$response_decoded = json_decode( $response );
+
+			if ( is_object( $response_decoded ) && isset($response_decoded->refresh_token) ) {
+				
+				// Save the refresh token.
+				update_option( 'prso_gforms_adv_youtube_token', trim( $response ) );
+
+				return $auth_code;
+			}
+		}
+		
+		return NULL;
+	}
 	
 	/**
 	* enqueue_scripts
@@ -335,6 +443,15 @@ class PrsoGformsAdvUploaderInit {
 			if( is_admin() && isset($_GET['page']) && $_GET['page'] === 'gf_edit_forms' ) {
 				wp_enqueue_style('plupload-gform-form-display');
 			}
+			
+			//Register and enque script for admin view
+			wp_register_script( 'prso-pluploader-admin', 
+				plugins_url(  '/inc/js/gforms-admin.js', __FILE__), 
+				array('jquery'), 
+				'1.0', 
+				$in_footer 
+			);
+			wp_enqueue_script('prso-pluploader-admin');
 			
 		}
 		

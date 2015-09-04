@@ -519,6 +519,33 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 				//YouTube API Options
 				array(
 					'required' 	=> array('api_select','=','youtube'),
+					'id'		=>'youtube_api_version',
+					'type' 		=> 'select',
+					'title' 	=> __('YouTube API Version', $this->text_domain), 
+					'subtitle' 	=> __('Select api version (new is best)', $this->text_domain),
+					'desc' 		=> __('You can continue to use the old api if it works, but you should switch to new', $this->text_domain),
+					'options'	=> array( 'new' => 'NEW API (recommended)', 'old' => 'OLD API' ),
+					'default'	=> 'new'
+				),
+				array(
+					'required' 	=> array('youtube_api_version','=','new'),
+					'id'=>"youtube_api_auth_action",
+					'type' => 'callback',
+					'title' => __('Authenticate YouTube Account', $this->text_domain), 
+					'subtitle' => __('Allow plugin to upload to your YouTube account.', $this->text_domain),
+					'desc' => 'Authenticate with Google then copy and paste code in field below, then save changes.',
+					'callback' => 'redux_youtube_auth'
+				),
+				array(
+					'required' 	=> array('youtube_api_version','=','new'),
+					'id'		=>'youtube_api_auth_code',
+					'type' 		=> 'text',
+					'title' 	=> __('Authentication Code', $this->text_domain),
+					'subtitle' 	=> __('Paste Code returned from step above, then save changes.', $this->text_domain),
+					'default' 	=> ''
+				),
+				array(
+					'required' 	=> array('youtube_api_version','=','old'),
 					'id'		=>'youtube_api_key_text',
 					'type' 		=> 'text',
 					'title' 	=> __('API Dev App Key', $this->text_domain),
@@ -527,7 +554,7 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 					'default' 	=> 'YouTube App Key'
 				),
 				array(
-					'required' 	=> array('api_select','=','youtube'),
+					'required' 	=> array('youtube_api_version','=','old'),
 					'id'		=>'youtube_username_text',
 					'type' 		=> 'text',
 					'title' 	=> __('YouTube Username', $this->text_domain),
@@ -535,7 +562,7 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 					'default' 	=> 'YouTube Username'
 				),
 				array(
-					'required' 	=> array('api_select','=','youtube'),
+					'required' 	=> array('youtube_api_version','=','old'),
 					'id'		=>'youtube_password_text',
 					'type' 		=> 'text',
 					'title' 	=> __('YouTube Password', $this->text_domain),
@@ -732,7 +759,7 @@ if ( !class_exists( "PrsoGformsAdvUploaderOptions" ) ) {
 				} else {
 					$v = str_replace("-", "_", $this->args['opt_name']);
 				}
-				$this->args['intro_text'] = sprintf( __('<p>To access any of your saved options from within your code you can use your global variable: <strong>$%1$s</strong></p>', $this->text_domain ), $v );
+				$this->args['intro_text'] = sprintf( __('<h3 style="float:left;margin-right:20px;">Hi! Help keep this plugin free and get the best WordPress hosting out there!</h3><a target="_blank" href="http://shareasale.com/r.cfm?b=768139&amp;u=1029469&amp;m=41388&amp;urllink=&amp;afftrack="><img src="http://static.shareasale.com/image/41388/Fastsite_234x60-v1.jpg" border="0" alt="WP Engine Hosting" /></a>', $this->text_domain ), $v );
 			} else {
 				$this->args['intro_text'] = __('<p>This text is displayed above the options panel. It isn\'t required, but more info is always better! The intro_text field accepts all HTML.</p>', $this->text_domain);
 			}
@@ -758,6 +785,19 @@ if ( !function_exists( 'redux_my_custom_field' ) ):
 	    print_r($value);
 	}
 endif;
+
+function redux_youtube_auth($field, $value) {
+	
+	global $prso_gforms_adv_youtube_auth_url;
+	
+	?>
+	<fieldset id="prso_gforms_adv_uploader_options-youtube_api_auth_action" class="redux-field-container redux-field redux-field-init">
+		<a id="prso-adv-uploader-youtube-auth" class="button button-primary" href="#" data-prso-youtube-auth="<?php echo esc_url( $prso_gforms_adv_youtube_auth_url ); ?>"><?php _ex( 'Connect YouTube Account', 'text', PRSOGFORMSADVUPLOADER__DOMAIN ); ?></a>
+		<div class="description field-desc"><?php echo $field['desc']; ?></div>
+	</fieldset>
+	<?php
+	
+}
 
 /**
  

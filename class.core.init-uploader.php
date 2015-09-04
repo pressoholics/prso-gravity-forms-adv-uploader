@@ -50,8 +50,8 @@ class PrsoGformsAdvUploaderInit {
 	
 	protected $allowed_mimes						= array();
 	
-	public static $google_oauth_client_id			= '768837103418-ejtcvideatj9gsctkcgnurs352p8ehgq.apps.googleusercontent.com';
-	public static $google_oauth_client_secret		= 'eAVvm26dr3UN5WCySMNU8rZc';
+	public static $google_oauth_client_id			= '799640800194-n2efonsv9kotakrbes1fdg7adulm3l2h.apps.googleusercontent.com';
+	public static $google_oauth_client_secret		= 'J6AnUgvYuOgTh_LM12ZsfxQF';
 	public static $google_oauth_redirect			= 'urn:ietf:wg:oauth:2.0:oob';
 	
 	//Gforms meta keys

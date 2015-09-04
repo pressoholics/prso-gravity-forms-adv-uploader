@@ -42,7 +42,7 @@ class PrsoGformsAdvUploaderInit {
 	public $prso_pluploader_args 					= NULL;
 	private static $prso_pluploader_tmp_dir_name 	= 'prso-pluploader-tmp';
 	private static $submit_nonce_key 				= 'prso-pluploader-loader-submit-nonce';
-	private static $encrypt_key						= '4ddRp]4X5}R-WU';
+	private static $encrypt_key						= NULL;
 	private $move_div 								= array();
 	
 	protected $plugin_options						= array();
@@ -67,6 +67,9 @@ class PrsoGformsAdvUploaderInit {
  		
  		//Cache UI
  		$this->user_interface = $this->plugin_options['ui_select'];
+ 		
+ 		//Cache encrypt key
+ 		self::$encrypt_key = pack('H*', "bcb04b7e103a0cd8b54763827dba08bc55abe029fdebae5e1d417e2ffb2a00a3");
  		
  		//Init plugin
  		$this->plugin_init();

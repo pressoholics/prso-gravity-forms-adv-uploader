@@ -189,11 +189,17 @@ class PrsoGformsAdvUploaderInit {
 		
 		require_once PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc' . DIRECTORY_SEPARATOR . 'VideoUploader' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'Google' . DIRECTORY_SEPARATOR . 'autoload.php';
 		
-		require_once PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc' . DIRECTORY_SEPARATOR . 'VideoUploader' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'Google' . DIRECTORY_SEPARATOR . 'Client.php';
+		if ( !class_exists('Google_Client') ) {	
+			require_once PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc' . DIRECTORY_SEPARATOR . 'VideoUploader' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'Google' . DIRECTORY_SEPARATOR . 'Client.php';
+		}
 		
 		require_once PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc' . DIRECTORY_SEPARATOR . 'VideoUploader' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'Google' . DIRECTORY_SEPARATOR . 'Service' . DIRECTORY_SEPARATOR . 'YouTube.php';
+			
 		
-		session_start();
+		
+		if (session_status() == PHP_SESSION_NONE) {
+		    session_start();
+		}
 		
 		$OAUTH2_CLIENT_ID 		= self::$google_oauth_client_id;
 		$OAUTH2_CLIENT_SECRET 	= self::$google_oauth_client_secret;

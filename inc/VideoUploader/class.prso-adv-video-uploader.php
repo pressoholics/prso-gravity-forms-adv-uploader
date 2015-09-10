@@ -227,14 +227,19 @@ class PrsoAdvVideoUploader {
 		//Cache path to wp ajax script
 		$wp_ajax_url = admin_url('admin-ajax.php');
 		
+		curl_setopt($ch, CURLOPT_VERBOSE, true);
 		curl_setopt($ch, CURLOPT_URL, $wp_ajax_url);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 400);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
 
-		curl_exec($ch);
+		$result = curl_exec($ch);
+		
+		$curl_error = curl_error( $ch );
+		
 		curl_close($ch);
 		
+		$this->plugin_error_log( 'cURL: ' . $curl_error );
 	}
 	
 	/**

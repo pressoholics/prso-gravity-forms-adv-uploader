@@ -43,3 +43,4 @@ Thumbs.db
 *.asf
 *.wmv
 *.avi
+php_error.log

@@ -7,7 +7,7 @@
  *
  *	Zend YouTube Api Class - This class makes use of the Zend youtube class to upload files
  *	
- *
+ * https://developers.google.com/youtube/v3/code_samples/php#resumable_uploads
  */
 class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 	
@@ -74,13 +74,40 @@ class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 		$returned_video_data = array();
 		$plugin_options		= array();
 		
+		$this->data['is_google_oauth2'] = FALSE;
+		
 		//First try and get the plugin options
 		if( isset($this->plugin_options_slug) ) {
 			$plugin_options = get_option( $this->plugin_options_slug );
 		}
 		
+		//Try and get oauth token
+		$oauth_token = get_option( 'prso_gforms_adv_youtube_token' );
+		
+		//Detect which version of the api we are using via options
+		
 		//Confirm required options are set
-		if( $plugin_options !== FALSE && isset($plugin_options['youtube_api_key_text'], $plugin_options['youtube_username_text'], $plugin_options['youtube_password_text']) ) {
+		if( $plugin_options !== FALSE && isset($oauth_token) && !empty($oauth_token) ) {
+			
+			$this->plugin_error_log( 'Using new api' );
+			
+			//Cache path to google api php client library
+			$this->data['google_api_library_path'] = $this->plugin_includes . '/Google';
+			
+			// Call set_include_path() as needed to point to your client library.
+			require_once $this->data['google_api_library_path'] . DIRECTORY_SEPARATOR . 'autoload.php';
+			require_once $this->data['google_api_library_path'] . DIRECTORY_SEPARATOR . 'Client.php';
+			require_once $this->data['google_api_library_path'] . DIRECTORY_SEPARATOR . 'Service' . DIRECTORY_SEPARATOR . 'YouTube.php';
+			
+			
+			$this->data['is_google_oauth2'] = TRUE;
+			
+			$this->init_youtube_oauth2_api( $oauth_token );
+			
+		
+		} elseif( $plugin_options !== FALSE && isset($plugin_options['youtube_api_key_text'], $plugin_options['youtube_username_text'], $plugin_options['youtube_password_text']) ) {
+			
+			$this->plugin_error_log( 'Using old api' );
 			
 			//Cache path to zend library
 			$this->data['zend_library_path'] = $this->plugin_includes . '/Zend';
@@ -128,6 +155,41 @@ class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 		$returned_video_data = $this->youtube_api_cache_video_id( $returned_video_data );
 		
 		return $returned_video_data;
+		
+	}
+	
+	private function init_youtube_oauth2_api( $access_token ) {
+		
+		$OAUTH2_CLIENT_ID 		= PrsoGformsAdvUploaderInit::$google_oauth_client_id;
+		$OAUTH2_CLIENT_SECRET 	= PrsoGformsAdvUploaderInit::$google_oauth_client_secret;
+		
+		$client = new Google_Client();
+		$client->setClientId($OAUTH2_CLIENT_ID);
+		$client->setClientSecret($OAUTH2_CLIENT_SECRET);
+		$client->setScopes('https://www.googleapis.com/auth/youtube');
+		$client->setRedirectUri( PrsoGformsAdvUploaderInit::$google_oauth_redirect );
+		
+		// Define an object that will be used to make all API requests.
+		$youtube = new Google_Service_YouTube($client);
+		
+		//Refresh access token
+		$AccessData = json_decode( $access_token );	
+		if( isset($AccessData->refresh_token) ) {
+			$client->refreshToken( $AccessData->refresh_token );
+		}
+		
+		$client->setAccessToken( $access_token );
+		
+		if( $client->getAccessToken() ) {
+		
+			$this->data['YouTubeClass']['client'] 	= $client;
+			$this->data['YouTubeClass']['youtube'] 	= $youtube;
+			
+		} else {
+			
+			$this->plugin_error_log( 'YouTube API:: Access token not valid, need to refresh' );
+			
+		}
 		
 	}
 	
@@ -205,14 +267,136 @@ class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 		foreach( $validated_attachments as $field_id => $attachments ) {
 			
 			foreach( $attachments as $key => $attachment_data ) {
-			
-				$validated_attachments[$field_id][$key]['video_data'] = $this->youtube_api_upload_video( $attachment_data );
+				
+				//Detect which api we are using
+				if( TRUE === $this->data['is_google_oauth2'] ) {
+					
+					$validated_attachments[$field_id][$key]['video_data'] = $this->youtube_oauth2_upload_video( $attachment_data );
+					
+				} else {
+					$validated_attachments[$field_id][$key]['video_data'] = $this->youtube_api_upload_video( $attachment_data );
+				}
 				
 			}
 			
 		}
 		
 		return $validated_attachments;
+	}
+	
+	private function youtube_oauth2_upload_video( $attachment_data ) {
+		
+		//Init vars
+		$file_type			= NULL;
+		$path_info			= NULL;
+		$myVideoEntry 		= NULL;
+		$uploadUrl			= NULL;
+		$filesource			= NULL;
+		$newEntry			= NULL;
+		$output				= NULL;
+		
+		//Cache plugin options
+ 		$plugin_options = get_option( PRSOGFORMSADVUPLOADER__OPTIONS_NAME );
+		
+		//cache client object from youtube api
+		$client 	= $this->data['YouTubeClass']['client'];
+		$youtube	= $this->data['YouTubeClass']['youtube'];
+		
+		//Check for required data
+		if( isset($attachment_data['file_path'], $attachment_data['mime_type'], $attachment_data['title'], $attachment_data['description']) ) {
+		
+			try{
+			
+			    // REPLACE this value with the path to the file you are uploading.
+			    $videoPath = $attachment_data['file_path'];
+			
+			    // Create a snippet with title, description, tags and category ID
+			    // Create an asset resource and set its snippet metadata and type.
+			    // This example sets the video's title, description, keyword tags, and
+			    // video category.
+			    $snippet = new Google_Service_YouTube_VideoSnippet();
+			    $snippet->setTitle( $attachment_data['title'] );
+			    $snippet->setDescription( $attachment_data['description'] );
+			    //$snippet->setTags(array("tag1", "tag2"));
+			
+			    // Numeric video category. See
+			    // https://developers.google.com/youtube/v3/docs/videoCategories/list 
+			    //$snippet->setCategoryId("22");
+			
+			    // Set the video's status to "public". Valid statuses are "public",
+			    // "private" and "unlisted".
+			    $status = new Google_Service_YouTube_VideoStatus();
+
+				if( $plugin_options['video_is_private'] ){
+					$status->privacyStatus = "private";
+				} else {
+					$status->privacyStatus = "public";
+				}
+			
+			    // Associate the snippet and status objects with a new video resource.
+			    $video = new Google_Service_YouTube_Video();
+			    $video->setSnippet($snippet);
+			    $video->setStatus($status);
+			
+			    // Specify the size of each chunk of data, in bytes. Set a higher value for
+			    // reliable connection as fewer chunks lead to faster uploads. Set a lower
+			    // value for better recovery on less reliable connections.
+			    $chunkSizeBytes = 10 * 1024 * 1024;
+			
+			    // Setting the defer flag to true tells the client to return a request which can be called
+			    // with ->execute(); instead of making the API call immediately.
+			    $client->setDefer(true);
+			
+			    // Create a request for the API's videos.insert method to create and upload the video.
+			    $insertRequest = $youtube->videos->insert("status,snippet", $video);
+			
+			    // Create a MediaFileUpload object for resumable uploads.
+			    $media = new Google_Http_MediaFileUpload(
+			        $client,
+			        $insertRequest,
+			        'video/*',
+			        null,
+			        true,
+			        $chunkSizeBytes
+			    );
+			    $media->setFileSize(filesize($videoPath));
+			
+			
+			    // Read the media file and upload it chunk by chunk.
+			    $status = false;
+			    $handle = fopen($videoPath, "rb");
+			    while (!$status && !feof($handle)) {
+			      $chunk = fread($handle, $chunkSizeBytes);
+			      $status = $media->nextChunk($chunk);
+			    }
+			
+			    fclose($handle);
+			
+			    // If you want to make other calls after the file upload, set setDefer back to false
+			    $client->setDefer(false);
+				
+				$this->plugin_error_log( $status );
+				
+			    return $status;
+			
+			  } catch (Google_Service_Exception $e) {
+			  	
+			  	$this->plugin_error_log( 
+			  		sprintf('<p>A service error occurred: <code>%s</code></p>',
+			        htmlspecialchars($e->getMessage())) 
+			    );
+			  	
+			  } catch (Google_Exception $e) {
+			  	
+			  	$this->plugin_error_log( 
+			  		sprintf('<p>A service error occurred: <code>%s</code></p>',
+			        htmlspecialchars($e->getMessage())) 
+			    );
+			  	
+			  }
+		
+		}
+		
 	}
 	
 	/**
@@ -326,18 +510,40 @@ class PrsoAdvYoutubeApi extends PrsoAdvVideoUploader {
 			
 			foreach( $attachments as $key => $attachment_data ) {
 				
-				if( isset($attachment_data['video_data']) && is_object($attachment_data['video_data']) ) {
+				//Detect api we are using
+				if( TRUE === $this->data['is_google_oauth2'] ) {
 					
 					$YoutubeObj = $attachment_data['video_data'];
 					
-					if( method_exists($YoutubeObj, 'getVideoId') ) {
+					if( isset($YoutubeObj->id) ) {
+						
+						$video_id = esc_attr( $YoutubeObj->id );
 						
 						//Get video id from youtube returned object
-						$validated_attachments[$field_id][$key]['video_id'] = $YoutubeObj->getVideoId();
-						$validated_attachments[$field_id][$key]['video_url'] = $YoutubeObj->getVideoWatchPageUrl();
+						$validated_attachments[$field_id][$key]['video_id'] 	= $video_id;
+						$validated_attachments[$field_id][$key]['video_url'] 	= esc_url( "https://www.youtube.com/watch?v={$video_id}" );
 						
 						//Unset youtube object from array
 						unset( $validated_attachments[$field_id][$key]['video_data'] );
+						
+					}
+					
+				} else {
+					
+					if( isset($attachment_data['video_data']) && is_object($attachment_data['video_data']) ) {
+					
+						$YoutubeObj = $attachment_data['video_data'];
+						
+						if( method_exists($YoutubeObj, 'getVideoId') ) {
+							
+							//Get video id from youtube returned object
+							$validated_attachments[$field_id][$key]['video_id'] = $YoutubeObj->getVideoId();
+							$validated_attachments[$field_id][$key]['video_url'] = $YoutubeObj->getVideoWatchPageUrl();
+							
+							//Unset youtube object from array
+							unset( $validated_attachments[$field_id][$key]['video_data'] );
+							
+						}
 						
 					}
 					

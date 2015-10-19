@@ -221,20 +221,36 @@ class PrsoAdvVideoUploader {
 	*/
 	private function init_curl( $post_fields ) {
 		
+		$curl_timeout = 1;
+		
+		//First try and get the plugin options
+		if( isset($this->plugin_options_slug) ) {
+			$plugin_options = get_option( $this->plugin_options_slug );
+		}
+		
+		if( isset($plugin_options['video_upload_timeout']) ) {
+			$curl_timeout = (int) $plugin_options['video_upload_timeout'];
+		}
+		
 		//** Init curl request - note this is asynchronous **//
 		$ch = curl_init();
 		
 		//Cache path to wp ajax script
 		$wp_ajax_url = admin_url('admin-ajax.php');
 		
+		curl_setopt($ch, CURLOPT_VERBOSE, true);
 		curl_setopt($ch, CURLOPT_URL, $wp_ajax_url);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+		curl_setopt($ch, CURLOPT_TIMEOUT, $curl_timeout);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
 
 		curl_exec($ch);
+		
+		$curl_error = curl_error( $ch );
+		
 		curl_close($ch);
 		
+		$this->plugin_error_log( 'cURL: ' . $curl_error );
 	}
 	
 	/**
@@ -313,6 +329,12 @@ class PrsoAdvVideoUploader {
 		if( !$this->curl_check_nonce($_POST['nonce_key'],'adv-video-nonce') ) {
 			die();
 		}
+		
+		$this->plugin_error_log( 'exec function: init_attachment_process' );
+		
+		//Try and force script to continue once curl coneection has ended
+		ignore_user_abort( TRUE );
+		set_time_limit( 600 );
 		
 		//Try to increase php max execution time
 		ini_set( 'max_execution_time', 600 );

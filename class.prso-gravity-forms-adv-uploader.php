@@ -19,12 +19,29 @@ class PrsoGformsAdvUploader {
 		//Init plugin
 		add_action( 'init', array($this, 'init_plugin'), 999 );
 		
+		add_action('init', array($this, 'removeDemoModeLink') );
+		add_action( 'admin_menu', array($this, 'remove_redux_menu'),12 );
+		
 		//Init plugin core
 		$core_include = $this->plugin_path . 'class.core.init-uploader.php';
 		include_once( $core_include );
 		$PluginInit = new PrsoGformsAdvUploaderInit();
 		
 	}
+	
+	function removeDemoModeLink() { // Be sure to rename this function to something more unique
+	    if ( class_exists('ReduxFrameworkPlugin') ) {
+	        remove_filter( 'plugin_row_meta', array( ReduxFrameworkPlugin::get_instance(), 'plugin_metalinks'), null, 2 );
+	    }
+	    if ( class_exists('ReduxFrameworkPlugin') ) {
+	        remove_action('admin_notices', array( ReduxFrameworkPlugin::get_instance(), 'admin_notices' ) );    
+	    }
+	}
+	
+	function remove_redux_menu() {
+	    remove_submenu_page('tools.php','redux-about');
+	}
+
 	
 	/**
 	 * Attached to activate_{ plugin_basename( __FILES__ ) } by register_activation_hook()

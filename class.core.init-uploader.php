@@ -1636,7 +1636,7 @@ class PrsoGformsAdvUploaderInit {
 			$destination_filename = apply_filters( 'prso_gform_pluploader_destination_filename', $file_base_name, $entry, $form );
 			
 			//Cache destination file path
-			$wp_dest_file_path = $wp_upload_dir['path'] . '/' . str_replace(' ', '%20', $destination_filename);
+			$wp_dest_file_path = $wp_upload_dir['path'] . '/' . $destination_filename;
 			
 			//First let's move this file into the wp uploads dir structure
 			$move_status = $this->move_file( $uploaded_file_path, $wp_dest_file_path );

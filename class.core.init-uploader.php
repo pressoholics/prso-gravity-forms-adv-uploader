@@ -130,7 +130,7 @@ class PrsoGformsAdvUploaderInit {
 		global $prso_gforms_adv_youtube_auth_url;
 		
 		//Add filter for redux options framework
-		add_filter( 'redux/validate/prso_gforms_adv_uploader_options/before_validation', array($this, 'validate_google_oauth_code'), 10, 2 );
+		//add_filter( 'redux/validate/prso_gforms_adv_uploader_options/before_validation', array($this, 'validate_google_oauth_code'), 10, 2 );
 		
 		//Detect current view
 		if( isset($_GET['page']) && ($_GET['page'] === 'prso_gforms_adv_uploader_options_options') ) {
@@ -138,6 +138,8 @@ class PrsoGformsAdvUploaderInit {
 			//TESTING
 			$client_id 		= self::$google_oauth_client_id;
 			$client_secret 	= self::$google_oauth_client_secret;
+			
+			$this->validate_google_oauth_code( $this->plugin_options, NULL );
 			
 			$scope = 'https://www.googleapis.com/auth/youtube';
 			
@@ -162,6 +164,8 @@ class PrsoGformsAdvUploaderInit {
 	}
 	
 	public function validate_google_oauth_code( $plugin_options, $redux_options ) {
+		
+		
 		
 		//Detect oauth code submission
 		if( isset($plugin_options['youtube_api_auth_code']) && !empty($plugin_options['youtube_api_auth_code']) ) {
@@ -193,9 +197,7 @@ class PrsoGformsAdvUploaderInit {
 			require_once PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc' . DIRECTORY_SEPARATOR . 'VideoUploader' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'Google' . DIRECTORY_SEPARATOR . 'Client.php';
 		}
 		
-		require_once PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc' . DIRECTORY_SEPARATOR . 'VideoUploader' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'Google' . DIRECTORY_SEPARATOR . 'Service' . DIRECTORY_SEPARATOR . 'YouTube.php';
-			
-		
+		require_once PRSOGFORMSADVUPLOADER__PLUGIN_DIR . 'inc' . DIRECTORY_SEPARATOR . 'VideoUploader' . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'Google' . DIRECTORY_SEPARATOR . 'Service' . DIRECTORY_SEPARATOR . 'YouTube.php';	
 		
 		if (session_status() == PHP_SESSION_NONE) {
 		    session_start();
@@ -223,9 +225,11 @@ class PrsoGformsAdvUploaderInit {
 
 			if ( is_object( $response_decoded ) && isset($response_decoded->refresh_token) ) {
 				
+				delete_option( 'prso_gforms_adv_youtube_token' );
+				
 				// Save the refresh token.
-				update_option( 'prso_gforms_adv_youtube_token', trim( $response ) );
-
+				$result = update_option( 'prso_gforms_adv_youtube_token', trim( $response ) );
+				
 				return $auth_code;
 			}
 		}
@@ -1904,7 +1908,7 @@ class PrsoGformsAdvUploaderInit {
 	* @access 	public
 	* @author	Ben Moody
 	*/
-	public function pluploader_entry_field_value( $value, $field, $lead, $form ) {
+	public function pluploader_entry_field_value( $value, $field, $entry, $form ) {
 		
 		//Init vars
 		$post_edit_url			= NULL;
@@ -1920,44 +1924,51 @@ class PrsoGformsAdvUploaderInit {
 			//First cache the base url for the wp post edit page
 			$post_edit_url = get_admin_url(NULL, '/post.php');
 			
+			$value = RGFormsModel::get_field_value_long( $entry, $field['id'], $form );
+			
 			//Unserialize the array of attachment post id's
 			if( !empty($value) ) {
 				
 				$file_attachment_ids = maybe_unserialize( $value );
 				
-				//Loop the array of file attachments and cache the url to each attchments edit view
-				foreach( $file_attachment_ids as $key => $file_id ) {
+				if( $file_attachment_ids ){
 					
-					//Init vars
-					$post 		= NULL;
-					$path_info	= NULL;
-					
-					//Get the file's ext via post info
-					$post = get_post($file_id);
-					if( isset($post->guid) ) {
-						$path_info = pathinfo( $post->guid );
+					//Loop the array of file attachments and cache the url to each attchments edit view
+					foreach( $file_attachment_ids as $key => $file_id ) {
 						
-						//Cache the file's extension in the urls array
-						if( isset($path_info['extension']) ) {
-							$file_attachment_urls[$key]['ext'] = '.' . $path_info['extension'];
-						} else {
-							$file_attachment_urls[$key]['ext'] = 'N/A';
+						//Init vars
+						$post 		= NULL;
+						$path_info	= NULL;
+						
+						//Get the file's ext via post info
+						$post = get_post($file_id);
+						if( isset($post->guid) ) {
+							$path_info = pathinfo( $post->guid );
+							
+							//Cache the file's extension in the urls array
+							if( isset($path_info['extension']) ) {
+								$file_attachment_urls[$key]['ext'] = '.' . $path_info['extension'];
+							} else {
+								$file_attachment_urls[$key]['ext'] = 'N/A';
+							}
+							
 						}
+						
+						$file_attachment_urls[$key]['url'] = add_query_arg( 
+							array(
+								'post'		=>	(int) $file_id,
+								'action'	=>	'edit'
+							),
+							esc_url($post_edit_url)
+						);
+						
+						//Filter hook for wp attachment link
+						$file_attachment_urls[$key]['url'] = apply_filters( 'prso_gform_pluploader_entry_attachment_links', $file_attachment_urls[$key]['url'], $file_id, $post );
 						
 					}
 					
-					$file_attachment_urls[$key]['url'] = add_query_arg( 
-						array(
-							'post'		=>	(int) $file_id,
-							'action'	=>	'edit'
-						),
-						esc_url($post_edit_url)
-					);
-					
-					//Filter hook for wp attachment link
-					$file_attachment_urls[$key]['url'] = apply_filters( 'prso_gform_pluploader_entry_attachment_links', $file_attachment_urls[$key]['url'], $file_id, $post );
-					
 				}
+				
 			}
 			
 			//Convert each file attachment url into a link for the user to click

@@ -84,6 +84,8 @@ class Google_Auth_OAuth2 extends Google_Auth_Abstract
    */
   public function authenticate($code, $crossClient = false)
   {
+  	
+  	
     if (strlen($code) == 0) {
       throw new Google_Auth_Exception("Invalid code");
     }
@@ -98,7 +100,7 @@ class Google_Auth_OAuth2 extends Google_Auth_Abstract
     if ($crossClient !== true) {
         $arguments['redirect_uri'] = $this->client->getClassConfig($this, 'redirect_uri');
     }
-
+	
     // We got here from the redirect from a successful authorization grant,
     // fetch the access token
     $request = new Google_Http_Request(
@@ -109,7 +111,7 @@ class Google_Auth_OAuth2 extends Google_Auth_Abstract
     );
     $request->disableGzip();
     $response = $this->client->getIo()->makeRequest($request);
-
+	
     if ($response->getResponseHttpCode() == 200) {
       $this->setAccessToken($response->getResponseBody());
       $this->token['created'] = time();
